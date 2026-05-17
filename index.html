@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈迪斯祝福助手 - Hades Boon Companion</title>
+<style>
+:root {
+  --bg-dark: #0a0a0f;
+  --bg-card: #14141f;
+  --bg-card-hover: #1a1a2e;
+  --border: #2a2a3e;
+  --text: #e0e0e0;
+  --text-dim: #8888aa;
+  --accent: #e63946;
+  --accent-glow: rgba(230, 57, 70, 0.3);
+  --zeus: #5b9bd5;
+  --poseidon: #2e86c1;
+  --athena: #f0c040;
+  --ares: #c0392b;
+  --aphrodite: #e8a0bf;
+  --artemis: #8e44ad;
+  --demeter: #76d7c4;
+  --dionysus: #a569bd;
+  --hermes: #f39c12;
+  --chaos: #5dade2;
+  --duo: #f1c40f;
+  --legendary: #e67e22;
+  --common: #a0a0a0;
+  --rare: #3498db;
+  --epic: #9b59b6;
+  --radius: 10px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a0a 50%, #0d0d1a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.logo h1 {
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+.logo .subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.nav-btn {
+  padding: 8px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-btn.active { color: #fff; background: var(--accent); font-weight: 600; }
+
+/* Main Layout */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* Section Title */
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .icon { font-size: 24px; }
+
+/* God Filter Bar */
+.god-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.god-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+}
+
+.god-chip:hover { transform: translateY(-1px); }
+.god-chip.active { border-color: currentColor; box-shadow: 0 0 12px currentColor; }
+.god-chip .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Boon Cards Grid */
+.boon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.boon-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.boon-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.boon-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.boon-card[data-god="zeus"]::before { background: var(--zeus); }
+.boon-card[data-god="poseidon"]::before { background: var(--poseidon); }
+.boon-card[data-god="athena"]::before { background: var(--athena); }
+.boon-card[data-god="ares"]::before { background: var(--ares); }
+.boon-card[data-god="aphrodite"]::before { background: var(--aphrodite); }
+.boon-card[data-god="artemis"]::before { background: var(--artemis); }
+.boon-card[data-god="demeter"]::before { background: var(--demeter); }
+.boon-card[data-god="dionysus"]::before { background: var(--dionysus); }
+.boon-card[data-god="hermes"]::before { background: var(--hermes); }
+.boon-card[data-god="chaos"]::before { background: var(--chaos); }
+.boon-card[data-type="duo"]::before { background: var(--duo); }
+.boon-card[data-type="legendary"]::before { background: var(--legendary); }
+
+.boon-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.boon-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.boon-type {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.type-attack { background: rgba(231,76,60,0.2); color: #e74c3c; }
+.type-special { background: rgba(52,152,219,0.2); color: #3498db; }
+.type-cast { background: rgba(155,89,182,0.2); color: #9b59b6; }
+.type-dash { background: rgba(46,204,113,0.2); color: #2ecc71; }
+.type-call { background: rgba(241,196,15,0.2); color: #f1c40f; }
+.type-passive { background: rgba(149,165,166,0.2); color: #95a5a6; }
+.type-duo { background: rgba(241,196,15,0.2); color: #f1c40f; }
+.type-legendary { background: rgba(230,126,34,0.2); color: #e67e22; }
+
+.boon-god-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.boon-desc {
+  font-size: 13px;
+  color: #bbb;
+  line-height: 1.5;
+}
+
+.boon-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.boon-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+}
+
+/* Synergy Section */
+.synergy-section {
+  margin-top: 32px;
+}
+
+.synergy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 16px;
+}
+
+.synergy-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: all 0.25s;
+}
+
+.synergy-card:hover {
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow);
+}
+
+.synergy-card h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: var(--duo);
+}
+
+.synergy-gods {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.synergy-god-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.synergy-desc {
+  font-size: 13px;
+  color: #bbb;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.synergy-req {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Build Recommendation */
+.build-section {
+  margin-top: 20px;
+}
+
+.build-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-group label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.control-group select, .control-group input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 14px;
+  min-width: 180px;
+  cursor: pointer;
+}
+
+.control-group select:focus, .control-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-generate {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #c0392b);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-generate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+/* Build Result */
+.build-result {
+  display: none;
+}
+
+.build-result.show { display: block; }
+
+.build-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.build-card h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.build-card .build-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.build-boons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.build-boon-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border-left: 3px solid;
+}
+
+.build-boon-item .bname {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.build-boon-item .bgod {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.build-boon-item .beffect {
+  font-size: 12px;
+  color: #999;
+  margin-left: auto;
+  text-align: right;
+  max-width: 200px;
+}
+
+.build-priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Weapon Cards */
+.weapon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+
+.weapon-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.25s;
+}
+
+.weapon-card:hover {
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow);
+}
+
+.weapon-card h3 {
+  font-size: 17px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weapon-card .wsubtitle {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.aspect-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aspect-item {
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.aspect-item h4 {
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.aspect-item p {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+}
+
+.aspect-item .hidden-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: rgba(230,126,34,0.2);
+  color: var(--legendary);
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+/* Search */
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-size: 16px;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.modal h2 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.modal .m-god {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.modal .m-desc {
+  font-size: 14px;
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.modal .m-section {
+  margin-bottom: 14px;
+}
+
+.modal .m-section h4 {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal .m-synergy {
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.modal .m-synergy .syn-name {
+  font-weight: 700;
+  color: var(--duo);
+}
+
+.modal .m-synergy .syn-desc {
+  color: #999;
+  font-size: 12px;
+}
+
+/* Tab buttons for build mode */
+.mode-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 4px;
+  width: fit-content;
+}
+
+.mode-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.mode-tab:hover { color: var(--text); }
+.mode-tab.active { color: #fff; background: var(--accent); font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-inner { flex-direction: column; align-items: flex-start; }
+  .nav { width: 100%; overflow-x: auto; }
+  .boon-grid { grid-template-columns: 1fr; }
+  .synergy-grid { grid-template-columns: 1fr; }
+  .weapon-grid { grid-template-columns: 1fr; }
+  .build-controls { flex-direction: column; }
+  .control-group select, .control-group input { min-width: 100%; }
+  .build-boon-item { flex-wrap: wrap; }
+  .build-boon-item .beffect { margin-left: 0; max-width: 100%; }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.boon-card, .synergy-card, .weapon-card, .build-card {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Stat bar */
+.stat-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 30px 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state p { font-size: 14px; }
+
+/* AI Chat */
+.chat-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-msg { display: flex; gap: 10px; align-items: flex-start; }
+.chat-msg.user { flex-direction: row-reverse; }
+
+.chat-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.05);
+}
+
+.chat-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.chat-msg.assistant .chat-bubble {
+  background: rgba(255,255,255,0.06);
+  border-top-left-radius: 4px;
+}
+
+.chat-msg.user .chat-bubble {
+  background: var(--accent);
+  border-top-right-radius: 4px;
+}
+
+.chat-loading { padding: 0 20px; }
+
+.typing-dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  animation: typing 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+.chat-input-area {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-input:focus { border-color: var(--accent); }
+
+.chat-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-send-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.chat-send-btn:hover { box-shadow: 0 0 12px var(--accent-glow); }
+.chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chat-voice-btn {
+  background: var(--bg-card);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.chat-voice-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.chat-voice-btn.listening {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  animation: pulse-voice 1.5s infinite;
+}
+
+@keyframes pulse-voice {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 12px transparent; }
+}
+
+.chat-status {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  min-height: 16px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .chat-container { height: 500px; }
+  .chat-bubble { max-width: 85%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">🔥</span>
+      <div>
+        <h1>哈迪斯祝福助手</h1>
+        <div class="subtitle">Hades Boon Companion</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="switchPage('boons')">⚔️ 祝福图鉴</button>
+      <button class="nav-btn" onclick="switchPage('synergy')">🔗 搭配关系</button>
+      <button class="nav-btn" onclick="switchPage('build')">💡 流派推荐</button>
+      <button class="nav-btn" onclick="switchPage('weapons')">🗡️ 武器图鉴</button>
+      <button class="nav-btn" onclick="switchPage('ai')">🔍 知识搜索</button>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <!-- Page: Boons -->
+  <div id="page-boons" class="page active">
+    <div class="section-title"><span class="icon">⚔️</span> 祝福图鉴</div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="boonSearch" placeholder="搜索祝福名称、效果、神明..." oninput="filterBoons()">
+    </div>
+    <div class="god-filter" id="godFilter"></div>
+    <div class="boon-grid" id="boonGrid"></div>
+  </div>
+
+  <!-- Page: Synergy -->
+  <div id="page-synergy" class="page">
+    <div class="section-title"><span class="icon">🔗</span> 双人祝福搭配</div>
+    <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px;">双人祝福需要同时拥有两位神明的前置祝福才能出现。点击卡片查看详细信息。</p>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="synergySearch" placeholder="搜索双人祝福..." oninput="filterSynergies()">
+    </div>
+    <div class="synergy-grid" id="synergyGrid"></div>
+  </div>
+
+  <!-- Page: Build -->
+  <div id="page-build" class="page">
+    <div class="section-title"><span class="icon">💡</span> 流派推荐</div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="switchBuildMode('weapon')">🗡️ 基于武器</button>
+      <button class="mode-tab" onclick="switchBuildMode('god')">⚡ 基于主神</button>
+    </div>
+
+    <!-- Weapon mode -->
+    <div id="build-weapon" class="build-section">
+      <div class="build-controls">
+        <div class="control-group">
+          <label>选择武器</label>
+          <select id="buildWeaponSelect" onchange="generateWeaponBuild()">
+            <option value="">-- 选择武器 --</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>选择形态</label>
+          <select id="buildAspectSelect" onchange="generateWeaponBuild()">
+            <option value="">-- 先选择武器 --</option>
+          </select>
+        </div>
+        <button class="btn-generate" onclick="generateWeaponBuild()">🎲 随机推荐</button>
+      </div>
+      <div class="build-result" id="weaponBuildResult"></div>
+    </div>
+
+    <!-- God mode -->
+    <div id="build-god" class="build-section" style="display:none">
+      <div class="build-controls">
+        <div class="control-group">
+          <label>选择主神</label>
+          <select id="buildGodSelect" onchange="generateGodBuild()">
+            <option value="">-- 选择主神 --</option>
+          </select>
+        </div>
+        <button class="btn-generate" onclick="generateGodBuild()">🎲 随机推荐</button>
+      </div>
+      <div class="build-result" id="godBuildResult"></div>
+    </div>
+  </div>
+
+  <!-- Page: Weapons -->
+  <div id="page-weapons" class="page">
+    <div class="section-title"><span class="icon">🗡️</span> 武器图鉴</div>
+    <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px;">冥界六大武器及其形态。隐藏形态需要完成特定解锁条件。</p>
+    <div class="weapon-grid" id="weaponGrid"></div>
+  </div>
+
+  <!-- Page: Knowledge Search -->
+  <div id="page-ai" class="page">
+    <div class="section-title"><span class="icon">🔍</span> 知识搜索</div>
+    <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px;">输入关键词搜索哈迪斯游戏知识库。支持中文提问和语音输入。</p>
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg assistant">
+          <div class="chat-avatar">📚</div>
+          <div class="chat-bubble">
+            你好！这里是哈迪斯知识库，可以搜到游戏的所有机制知识。<br><br>
+            <strong>试试搜这些：</strong><br>• 「雅典娜阿瑞斯双人祝福」<br>• 「关羽形态怎么解锁」<br>• 「心碎撕裂触发条件」<br>• 「新手常见问题」<br>• 「波塞冬武器形态」
+          </div>
+        </div>
+      </div>
+      <div class="chat-loading" id="chatLoading" style="display:none">
+        <div class="chat-msg assistant">
+          <div class="chat-avatar">📚</div>
+          <div class="chat-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" class="chat-input" placeholder="输入哈迪斯相关问题..." onkeydown="if(event.key==='Enter')doSearch()">
+          <button class="chat-btn chat-send-btn" onclick="doSearch()" title="搜索">➤</button>
+          <button class="chat-btn chat-voice-btn" id="voiceBtn" onclick="toggleVoice()" title="语音输入">🎤</button>
+        </div>
+        <div class="chat-status" id="chatStatus"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  哈迪斯祝福助手 - 数据基于 Hades 1 最终补丁版本 | 仅供学习参考
+</footer>
+
+<script>
+// ==================== DATABASE ====================
+
+const GODS = {
+  zeus: { name: '宙斯', nameEn: 'Zeus', icon: '⚡', color: '#5b9bd5', desc: '闪电之神 - 链式闪电与闪电打击' },
+  poseidon: { name: '波塞冬', nameEn: 'Poseidon', icon: '🌊', color: '#2e86c1', desc: '海神 - 击退与范围伤害' },
+  athena: { name: '雅典娜', nameEn: 'Athena', icon: '🛡️', color: '#f0c040', desc: '智慧女神 - 偏转弹幕与防御' },
+  ares: { name: '阿瑞斯', nameEn: 'Ares', icon: '🗡️', color: '#c0392b', desc: '战神 - 毁灭与刀刃裂隙' },
+  aphrodite: { name: '阿佛洛狄忒', nameEn: 'Aphrodite', icon: '💕', color: '#e8a0bf', desc: '爱与美之神 - 虚弱与魅惑' },
+  artemis: { name: '阿尔忒弥斯', nameEn: 'Artemis', icon: '🏹', color: '#8e44ad', desc: '狩猎女神 - 暴击与追踪' },
+  demeter: { name: '德墨忒尔', nameEn: 'Demeter', icon: '❄️', color: '#76d7c4', desc: '丰收女神 - 冰冻与控制' },
+  dionysus: { name: '狄俄尼索斯', nameEn: 'Dionysus', icon: '🍷', color: '#a569bd', desc: '酒神 - 宿醉与节日迷雾' },
+  hermes: { name: '赫尔墨斯', nameEn: 'Hermes', icon: '👟', color: '#f39c12', desc: '信使之神 - 速度与闪避' },
+  chaos: { name: '混沌', nameEn: 'Chaos', icon: '🌀', color: '#5dade2', desc: '混沌之神 - 先苦后甜的赌注' }
+};
+
+const BOONS = [
+  // ===== Zeus =====
+  { id:'zeus_attack', god:'zeus', name:'闪电打击', nameEn:'Lightning Strike', type:'attack', desc:'攻击造成伤害时释放链式闪电，在敌人间弹射。', effect:'闪电伤害: 10', tags:['闪电','链式'] },
+  { id:'zeus_special', god:'zeus', name:'雷霆绽放', nameEn:'Thunder Flourish', type:'special', desc:'特殊攻击使闪电打击附近敌人。', effect:'闪电伤害: 30', tags:['闪电','AOE'] },
+  { id:'zeus_cast', god:'zeus', name:'电击射击', nameEn:'Electric Shot', type:'cast', desc:'投射物变为链式闪电，在敌人间弹射。', effect:'投射伤害: 50→60', tags:['闪电','投射'] },
+  { id:'zeus_dash', god:'zeus', name:'雷霆冲刺', nameEn:'Thunder Dash', type:'dash', desc:'冲刺使闪电打击附近敌人。', effect:'闪电伤害: 10', tags:['闪电','冲刺'] },
+  { id:'zeus_call', god:'zeus', name:'宙斯之助', nameEn:"Zeus' Aid", type:'call', desc:'召唤闪电快速打击附近敌人1.5秒。', effect:'闪电伤害: 50', tags:['闪电','召唤'] },
+  { id:'zeus_retaliation', god:'zeus', name:'天罚', nameEn:"Heaven's Vengeance", type:'passive', desc:'受伤后，敌人被闪电打击。', effect:'复仇伤害: 80', tags:['复仇','闪电'] },
+  { id:'zeus_reflex', god:'zeus', name:'闪电反射', nameEn:'Lightning Reflexes', type:'passive', desc:'在被击中前冲刺，闪电打击附近敌人。', effect:'闪电伤害: 20', tags:['闪避','闪电'] },
+  { id:'zeus_billowing', god:'zeus', name:'汹涌之力', nameEn:'Billowing Strength', type:'passive', desc:'使用Call后15秒内造成更多伤害。', effect:'Call后增伤: +100%~250%', tags:['增伤','召唤'] },
+  { id:'zeus_clouded', god:'zeus', name:'云遮审判', nameEn:'Clouded Judgment', type:'passive', desc:'造成或受到伤害时，神圣计量表充能更快。', effect:'充能加成', tags:['充能'] },
+  { id:'zeus_storm', god:'zeus', name:'风暴闪电', nameEn:'Storm Lightning', type:'passive', desc:'链式闪电弹射次数+2。', effect:'弹射+2', tags:['闪电','增强'], requires:'闪电打击或电击射击' },
+  { id:'zeus_voltage', god:'zeus', name:'高压电', nameEn:'High Voltage', type:'passive', desc:'闪电打击效果范围+600。', effect:'范围+600', tags:['闪电','增强'], requires:'雷霆绽放/宙斯之助/雷霆冲刺' },
+  { id:'zeus_double', god:'zeus', name:'双重打击', nameEn:'Double Strike', type:'passive', desc:'闪电打击有25%几率打击两次。', effect:'25%双击', tags:['闪电','增强'], requires:'雷霆绽放/宙斯之助/雷霆冲刺' },
+  { id:'zeus_static', god:'zeus', name:'静电释放', nameEn:'Static Discharge', type:'passive', desc:'闪电效果使敌人进入Jolted状态。', effect:'Jolt伤害: 60', tags:['闪电','状态'] },
+
+  // ===== Poseidon =====
+  { id:'pos_attack', god:'poseidon', name:'风暴打击', nameEn:'Tempest Strike', type:'attack', desc:'攻击造成更多伤害并击退敌人。', effect:'攻击伤害: +30%', tags:['击退','增伤'] },
+  { id:'pos_special', god:'poseidon', name:'风暴绽放', nameEn:'Tempest Flourish', type:'special', desc:'特殊攻击造成更多伤害并击退敌人。', effect:'特殊伤害: +70%', tags:['击退','增伤'] },
+  { id:'pos_cast', god:'poseidon', name:'洪水射击', nameEn:'Flood Shot', type:'cast', desc:'投射物造成范围伤害并击退敌人。', effect:'投射伤害: 50→60', tags:['击退','AOE'] },
+  { id:'pos_dash', god:'poseidon', name:'潮汐冲刺', nameEn:'Tidal Dash', type:'dash', desc:'冲刺造成范围伤害并击退敌人。', effect:'冲刺伤害: 35', tags:['击退','冲刺'] },
+  { id:'pos_call', god:'poseidon', name:'波塞冬之助', nameEn:"Poseidon's Aid", type:'call', desc:'无敌冲撞敌人1.2秒。', effect:'冲击伤害: 250', tags:['击退','无敌','召唤'] },
+  { id:'pos_boiling', god:'poseidon', name:'沸点', nameEn:'Boiling Point', type:'passive', desc:'受伤时神圣计量表充能更快。', effect:'受伤充能: +40%', tags:['充能'] },
+  { id:'pos_hydraulic', god:'poseidon', name:'液压之力', nameEn:'Hydraulic Might', type:'passive', desc:'每次遭遇前5秒攻击和特殊更强。', effect:'初始伤害加成: +50%', tags:['增伤'] },
+  { id:'pos_sunken', god:'poseidon', name:'沉没宝藏', nameEn:'Sunken Treasure', type:'passive', desc:'获得随机宝石、黑暗、金币和生命。', effect:'随机资源', tags:['资源'] },
+  { id:'pos_ocean', god:'poseidon', name:'海洋恩赐', nameEn:"Ocean's Bounty", type:'passive', desc:'宝石、黑暗和金币奖励价值+50%。', effect:'奖励+50%', tags:['资源'] },
+  { id:'pos_typhoon', god:'poseidon', name:'台风之怒', nameEn:"Typhoon's Fury", type:'passive', desc:'将敌人撞到障碍物时造成更多伤害。', effect:'撞击伤害: +200%', tags:['击退','增强'] },
+  { id:'pos_breaking', god:'poseidon', name:'碎浪', nameEn:'Breaking Wave', type:'passive', desc:'撞击障碍物产生水波爆炸。', effect:'爆炸伤害: 100', tags:['击退','AOE'] },
+  { id:'pos_wave', god:'poseidon', name:'巨浪拍打', nameEn:'Wave Pounding', type:'passive', desc:'击退效果对Boss造成+20%伤害。', effect:'Boss增伤+20%', tags:['击退','增伤'] },
+  { id:'pos_rip', god:'poseidon', name:'锋利浅滩', nameEn:'Razor Shoals', type:'passive', desc:'击退效果同时使敌人Rupture。', effect:'Rupture伤害: 10/0.2s', tags:['击退','持续伤害'] },
+
+  // ===== Athena =====
+  { id:'ath_attack', god:'athena', name:'神圣打击', nameEn:'Divine Strike', type:'attack', desc:'攻击更强并可偏转敌方弹幕。', effect:'攻击伤害: +40%', tags:['偏转','增伤'] },
+  { id:'ath_special', god:'athena', name:'神圣绽放', nameEn:'Divine Flourish', type:'special', desc:'特殊攻击更强并可偏转敌方弹幕。', effect:'特殊伤害: +60%', tags:['偏转','增伤'] },
+  { id:'ath_cast', god:'athena', name:'方阵射击', nameEn:'Phalanx Shot', type:'cast', desc:'投射物造成小范围伤害并可偏转。', effect:'投射伤害: 50→85', tags:['偏转','AOE'] },
+  { id:'ath_dash', god:'athena', name:'神圣冲刺', nameEn:'Divine Dash', type:'dash', desc:'冲刺造成伤害并可偏转。', effect:'冲刺伤害: 10', tags:['偏转','冲刺'] },
+  { id:'ath_call', god:'athena', name:'雅典娜之助', nameEn:"Athena's Aid", type:'call', desc:'短暂无敌并偏转所有攻击。', effect:'持续: 1.5秒', tags:['偏转','无敌','召唤'] },
+  { id:'ath_shield', god:'athena', name:'神圣护盾', nameEn:'Holy Shield', type:'passive', desc:'受伤后伤害周围敌人并短暂偏转。', effect:'复仇伤害: 30', tags:['复仇','偏转'] },
+  { id:'ath_bronze', god:'athena', name:'铜皮铁骨', nameEn:'Bronze Skin', type:'passive', desc:'减少来自敌人的伤害。', effect:'减伤: +5%', tags:['防御'] },
+  { id:'ath_deathless', god:'athena', name:'不死之身', nameEn:'Deathless Stand', type:'passive', desc:'死亡抗拒使你无敌更久，恢复1次使用。', effect:'持续: 2秒', tags:['生存'] },
+  { id:'ath_last', god:'athena', name:'最后抵抗', nameEn:'Last Stand', type:'passive', desc:'死亡抗拒恢复更多生命，恢复1次使用。', effect:'恢复加成: +10%', tags:['生存'] },
+  { id:'ath_proud', god:'athena', name:'骄傲姿态', nameEn:'Proud Bearing', type:'passive', desc:'每次遭遇开始时神圣计量表部分充满。', effect:'初始充能: 20%', tags:['充能'] },
+  { id:'ath_sure', god:'athena', name:'稳健步伐', nameEn:'Sure Footing', type:'passive', desc:'减少来自陷阱的伤害。', effect:'减伤: +60%', tags:['防御'] },
+  { id:'ath_blinding', god:'athena', name:'致盲闪光', nameEn:'Blinding Flash', type:'passive', desc:'可偏转的能力同时使敌人Exposed。', effect:'背面伤害+50%', tags:['偏转','增强'] },
+  { id:'ath_brilliant', god:'athena', name:'华丽反击', nameEn:'Brilliant Riposte', type:'passive', desc:'偏转攻击时造成更多伤害。', effect:'偏转伤害: +80%', tags:['偏转','增伤'] },
+
+  // ===== Ares =====
+  { id:'ares_attack', god:'ares', name:'痛苦诅咒', nameEn:'Curse of Agony', type:'attack', desc:'攻击施加毁灭效果。', effect:'毁灭伤害: 50', tags:['毁灭','持续伤害'] },
+  { id:'ares_special', god:'ares', name:'疼痛诅咒', nameEn:'Curse of Pain', type:'special', desc:'特殊攻击施加毁灭效果。', effect:'毁灭伤害: 60', tags:['毁灭','持续伤害'] },
+  { id:'ares_cast', god:'ares', name:'切割射击', nameEn:'Slicing Shot', type:'cast', desc:'投射物变为向前飞行的刀刃裂隙。', effect:'裂隙伤害: 20/次', tags:['刀刃','投射'] },
+  { id:'ares_dash', god:'ares', name:'刀刃冲刺', nameEn:'Blade Dash', type:'dash', desc:'冲刺起点创建刀刃裂隙。', effect:'裂隙伤害: 10/次', tags:['刀刃','冲刺'] },
+  { id:'ares_call', god:'ares', name:'阿瑞斯之助', nameEn:"Ares' Aid", type:'call', desc:'变为无敌刀刃裂隙1.2秒。', effect:'裂隙伤害: 30/次', tags:['刀刃','无敌','召唤'] },
+  { id:'ares_vengeance', god:'ares', name:'复仇诅咒', nameEn:'Curse of Vengeance', type:'passive', desc:'受伤后对周围敌人施加毁灭。', effect:'毁灭伤害: 100', tags:['复仇','毁灭'] },
+  { id:'ares_urge', god:'ares', name:'杀戮冲动', nameEn:'Urge to Kill', type:'passive', desc:'攻击、特殊和投射造成更多伤害。', effect:'伤害: +10%', tags:['增伤'] },
+  { id:'ares_battle', god:'ares', name:'战斗狂怒', nameEn:'Battle Rage', type:'passive', desc:'击杀敌人后下次攻击或特殊伤害+100%。', effect:'击杀增伤: +100%', tags:['增伤'] },
+  { id:'ares_blood', god:'ares', name:'嗜血狂热', nameEn:'Blood Frenzy', type:'passive', desc:'使用死亡抗拒后该次遭遇伤害+15%。', effect:'遭遇增伤: +15%', tags:['增伤','生存'] },
+  { id:'ares_black', god:'ares', name:'黑金属', nameEn:'Black Metal', type:'passive', desc:'刀刃裂隙效果范围+20%。', effect:'范围+20%', tags:['刀刃','增强'] },
+  { id:'ares_engulf', god:'ares', name:'吞噬漩涡', nameEn:'Engulfing Vortex', type:'passive', desc:'刀刃裂隙持续更久并吸引敌人。', effect:'持续+0.2秒', tags:['刀刃','控制'] },
+  { id:'ares_dire', god:'ares', name:'厄运临头', nameEn:'Dire Misfortune', type:'passive', desc:'毁灭多次施加时伤害更高。', effect:'每层加成: 10', tags:['毁灭','增强'] },
+  { id:'ares_impending', god:'ares', name:'末日将至', nameEn:'Impending Doom', type:'passive', desc:'毁灭伤害+60%，但激活延迟+0.5秒。', effect:'伤害+60%', tags:['毁灭','增强'] },
+
+  // ===== Aphrodite =====
+  { id:'aph_attack', god:'aphrodite', name:'心碎打击', nameEn:'Heartbreak Strike', type:'attack', desc:'攻击造成更多伤害并施加虚弱。', effect:'攻击伤害: +50%', tags:['虚弱','增伤'] },
+  { id:'aph_special', god:'aphrodite', name:'心碎绽放', nameEn:'Heartbreak Flourish', type:'special', desc:'特殊攻击造成更多伤害并施加虚弱。', effect:'特殊伤害: +80%', tags:['虚弱','增伤'] },
+  { id:'aph_cast', god:'aphrodite', name:'粉碎射击', nameEn:'Crush Shot', type:'cast', desc:'投射物造成宽范围短距离爆炸并施加虚弱。', effect:'投射伤害: 50→90', tags:['虚弱','AOE'] },
+  { id:'aph_dash', god:'aphrodite', name:'热情冲刺', nameEn:'Passion Dash', type:'dash', desc:'冲刺终点造成伤害并施加虚弱。', effect:'冲刺伤害: 20', tags:['虚弱','冲刺'] },
+  { id:'aph_call', god:'aphrodite', name:'阿佛洛狄忒之助', nameEn:"Aphrodite's Aid", type:'call', desc:'发射追踪弹并施加魅惑。', effect:'魅惑持续: 5秒', tags:['魅惑','召唤'] },
+  { id:'aph_dying', god:'aphrodite', name:'临终哀叹', nameEn:'Dying Lament', type:'passive', desc:'敌人死亡时伤害附近敌人并施加虚弱。', effect:'死亡爆炸伤害: 40', tags:['虚弱','AOE'] },
+  { id:'aph_wave', god:'aphrodite', name:'绝望之波', nameEn:'Wave of Despair', type:'passive', desc:'受伤后伤害周围敌人并施加虚弱。', effect:'复仇伤害: 50', tags:['复仇','虚弱'] },
+  { id:'aph_life', god:'aphrodite', name:'生命肯定', nameEn:'Life Affirmation', type:'passive', desc:'房间奖励价值更高。', effect:'生命获取: +30%', tags:['资源'] },
+  { id:'aph_league', god:'aphrodite', name:'不同凡响', nameEn:'Different League', type:'passive', desc:'减少来自附近敌人的伤害。', effect:'减伤: +10%', tags:['防御'] },
+  { id:'aph_empty', god:'aphrodite', name:'内心空虚', nameEn:'Empty Inside', type:'passive', desc:'虚弱效果持续时间+5秒。', effect:'持续+5秒', tags:['虚弱','增强'] },
+  { id:'aph_sweet', god:'aphrodite', name:'甜蜜屈服', nameEn:'Sweet Surrender', type:'passive', desc:'虚弱状态的敌人受到更多伤害。', effect:'增伤: +10%', tags:['虚弱','增伤'] },
+  { id:'aph_broken', god:'aphrodite', name:'破碎决心', nameEn:'Broken Resolve', type:'passive', desc:'虚弱效果更强。', effect:'虚弱减伤: +10%', tags:['虚弱','增强'] },
+  { id:'aph_kiss', god:'aphrodite', name:'飞吻', nameEn:'Blown Kiss', type:'passive', desc:'投射物射程更远，对未受伤敌人更强。', effect:'首击加成: +50%', tags:['投射','增强'] },
+
+  // ===== Artemis =====
+  { id:'art_attack', god:'artemis', name:'致命打击', nameEn:'Deadly Strike', type:'attack', desc:'攻击更强，+15%暴击几率。', effect:'攻击伤害: +20%, 暴击+15%', tags:['暴击','增伤'] },
+  { id:'art_special', god:'artemis', name:'致命绽放', nameEn:'Deadly Flourish', type:'special', desc:'特殊攻击更强，+20%暴击几率。', effect:'特殊伤害: +40%, 暴击+20%', tags:['暴击','增伤'] },
+  { id:'art_cast', god:'artemis', name:'真实射击', nameEn:'True Shot', type:'cast', desc:'投射物追踪敌人，+10%暴击几率。', effect:'投射伤害: 50→70', tags:['暴击','追踪'] },
+  { id:'art_dash', god:'artemis', name:'猎人冲刺', nameEn:'Hunter Dash', type:'dash', desc:'冲刺攻击伤害+50%。', effect:'冲刺增伤: +50%', tags:['冲刺','增伤'] },
+  { id:'art_call', god:'artemis', name:'阿尔忒弥斯之助', nameEn:"Artemis' Aid", type:'call', desc:'发射追踪箭，+35%暴击几率。', effect:'箭伤害: 100', tags:['暴击','追踪','召唤'] },
+  { id:'art_pressure', god:'artemis', name:'穴位攻击', nameEn:'Pressure Points', type:'passive', desc:'所有伤害有+3%~+6%暴击几率。', effect:'暴击+3~6%', tags:['暴击'] },
+  { id:'art_exit', god:'artemis', name:'出口创伤', nameEn:'Exit Wounds', type:'passive', desc:'血石被弹出时造成伤害。', effect:'弹出伤害: 100', tags:['血石'] },
+  { id:'art_clean', god:'artemis', name:'干净击杀', nameEn:'Clean Kill', type:'passive', desc:'暴击伤害+15%~+37.5%。', effect:'暴击伤害+15~37.5%', tags:['暴击','增强'] },
+  { id:'art_support', god:'artemis', name:'支援火力', nameEn:'Support Fire', type:'passive', desc:'投射/攻击/特殊后发射追踪箭。', effect:'箭伤害: 10', tags:['追踪'] },
+  { id:'art_hide', god:'artemis', name:'破甲者', nameEn:'Hide Breaker', type:'passive', desc:'暴击对护甲伤害+200%。', effect:'护甲穿透+200%', tags:['暴击','增强'] },
+  { id:'art_instinct', god:'artemis', name:'猎人本能', nameEn:'Hunter Instinct', type:'passive', desc:'暴击时神圣计量表充能+0.25%。', effect:'暴击充能', tags:['暴击','充能'] },
+  { id:'art_mark', god:'artemis', name:'猎人标记', nameEn:"Hunter's Mark", type:'passive', desc:'暴击后标记附近敌人，被标记者暴击+30%。', effect:'标记暴击+30%', tags:['暴击','增强'] },
+
+  // ===== Demeter =====
+  { id:'dem_attack', god:'demeter', name:'冰霜打击', nameEn:'Frost Strike', type:'attack', desc:'攻击更强并施加冰冻。', effect:'攻击伤害: +40%', tags:['冰冻','增伤'] },
+  { id:'dem_special', god:'demeter', name:'冰霜绽放', nameEn:'Frost Flourish', type:'special', desc:'特殊攻击更强并施加冰冻。', effect:'特殊伤害: +60%', tags:['冰冻','增伤'] },
+  { id:'dem_cast', god:'demeter', name:'水晶光束', nameEn:'Crystal Beam', type:'cast', desc:'投射物为水晶，向敌人发射光束5秒。', effect:'伤害: 8/0.2s', tags:['冰冻','持续伤害'] },
+  { id:'dem_dash', god:'demeter', name:'寒风冲刺', nameEn:'Mistral Dash', type:'dash', desc:'冲刺前方释放寒风并施加冰冻。', effect:'伤害: 15', tags:['冰冻','冲刺'] },
+  { id:'dem_call', god:'demeter', name:'德墨忒尔之助', nameEn:"Demeter's Aid", type:'call', desc:'创建增长5秒的冬季漩涡，施加冰冻。', effect:'伤害: 10/0.25s', tags:['冰冻','AOE','召唤'] },
+  { id:'dem_snow', god:'demeter', name:'雪花爆发', nameEn:'Snow Burst', type:'passive', desc:'每次投射伤害周围敌人并施加冰冻。', effect:'范围伤害: 40', tags:['冰冻','AOE'] },
+  { id:'dem_frozen', god:'demeter', name:'冰霜触碰', nameEn:'Frozen Touch', type:'passive', desc:'受伤后完全冰冻敌人。', effect:'复仇伤害: 10', tags:['复仇','冰冻'] },
+  { id:'dem_rare', god:'demeter', name:'稀有作物', nameEn:'Rare Crop', type:'passive', desc:'祝福变为普通品质，每3次遭遇提升品质。', effect:'品质递增', tags:['品质'] },
+  { id:'dem_nourished', god:'demeter', name:'滋养灵魂', nameEn:'Nourished Soul', type:'passive', desc:'治疗效果更强(+30%)，立即恢复52生命。', effect:'治疗+30%', tags:['生存'] },
+  { id:'dem_ravenous', god:'demeter', name:'贪婪意志', nameEn:'Ravenous Will', type:'passive', desc:'无血石时减伤10%并增伤+10%。', effect:'减伤+10%, 增伤+10%', tags:['防御','增伤'] },
+  { id:'dem_glacial', god:'demeter', name:'冰川凝视', nameEn:'Glacial Glare', type:'passive', desc:'投射光束持续更久。', effect:'持续+2秒', tags:['冰冻','增强'], requires:'水晶光束' },
+  { id:'dem_arctic', god:'demeter', name:'极地爆发', nameEn:'Arctic Blast', type:'passive', desc:'10层冰冻引发爆炸。', effect:'爆炸伤害: 80', tags:['冰冻','AOE'] },
+  { id:'dem_killing', god:'demeter', name:'致命冰冻', nameEn:'Killing Freeze', type:'passive', desc:'所有敌人均被冰冻时，敌人减速并持续受到Decay伤害。', effect:'Decay伤害: 20/0.5s', tags:['冰冻','持续伤害'] },
+
+  // ===== Dionysus =====
+  { id:'dio_attack', god:'dionysus', name:'醉意打击', nameEn:'Drunken Strike', type:'attack', desc:'攻击施加宿醉效果。', effect:'宿醉伤害: 4/0.5s', tags:['宿醉','持续伤害'] },
+  { id:'dio_special', god:'dionysus', name:'醉意绽放', nameEn:'Drunken Flourish', type:'special', desc:'特殊攻击施加宿醉效果。', effect:'宿醉伤害: 5/0.5s', tags:['宿醉','持续伤害'] },
+  { id:'dio_cast', god:'dionysus', name:'迷幻射击', nameEn:'Trippy Shot', type:'cast', desc:'投射物为大型爆炸，产生节日迷雾。', effect:'投射伤害: 50→100', tags:['宿醉','迷雾','AOE'] },
+  { id:'dio_dash', god:'dionysus', name:'醉意冲刺', nameEn:'Drunken Dash', type:'dash', desc:'冲刺起点多次施加宿醉。', effect:'宿醉伤害: 2/0.5s', tags:['宿醉','冲刺'] },
+  { id:'dio_call', god:'dionysus', name:'狄俄尼索斯之助', nameEn:"Dionysus' Aid", type:'call', desc:'对周围敌人施加宿醉1.5秒。', effect:'宿醉伤害: 15/0.5s', tags:['宿醉','AOE','召唤'] },
+  { id:'dio_premium', god:'dionysus', name:'上等佳酿', nameEn:'Premium Vintage', type:'passive', desc:'拾取甘露时获得最大生命+20，立即获得1瓶甘露。', effect:'生命+20', tags:['生存'] },
+  { id:'dio_after', god:'dionysus', name:'余兴派对', nameEn:'After Party', type:'passive', desc:'遭遇后生命低于30%时恢复到阈值。', effect:'生命恢复', tags:['生存'] },
+  { id:'dio_strong', god:'dionysus', name:'烈酒', nameEn:'Strong Drink', type:'passive', desc:'使用泉水恢复满生命并获得+3%伤害/泉。', effect:'伤害+3%/泉', tags:['生存','增伤'] },
+  { id:'dio_positive', god:'dionysus', name:'积极心态', nameEn:'Positive Outlook', type:'passive', desc:'生命低于40%时减伤+10%。', effect:'减伤+10%', tags:['防御'] },
+  { id:'dio_tolerance', god:'dionysus', name:'高耐受力', nameEn:'High Tolerance', type:'passive', desc:'站在节日迷雾中减伤+14%。', effect:'减伤+14%', tags:['迷雾','防御'] },
+  { id:'dio_bad', god:'dionysus', name:'坏影响', nameEn:'Bad Influence', type:'passive', desc:'3+敌人宿醉时伤害+50%。', effect:'增伤+50%', tags:['宿醉','增伤'] },
+  { id:'dio_numbing', god:'dionysus', name:'麻木感', nameEn:'Numbing Sensation', type:'passive', desc:'宿醉效果同时使敌人减速15%。', effect:'减速15%', tags:['宿醉','控制'] },
+  { id:'dio_peer', god:'dionysus', name:'同侪压力', nameEn:'Peer Pressure', type:'passive', desc:'宿醉敌人每4秒传染附近敌人。', effect:'传染效果', tags:['宿醉','AOE'] },
+
+  // ===== Hermes =====
+  { id:'her_strike', god:'hermes', name:'迅捷打击', nameEn:'Swift Strike', type:'passive', desc:'攻击速度+10%。', effect:'攻速+10%', tags:['速度'] },
+  { id:'her_flourish', god:'hermes', name:'迅捷绽放', nameEn:'Swift Flourish', type:'passive', desc:'特殊攻击速度+10%。', effect:'特速+10%', tags:['速度'] },
+  { id:'her_haste', god:'hermes', name:'极速', nameEn:'Greater Haste', type:'passive', desc:'移动速度+20%。', effect:'移速+20%', tags:['速度'] },
+  { id:'her_reflex', god:'hermes', name:'最强反射', nameEn:'Greatest Reflex', type:'passive', desc:'额外+1次冲刺次数。', effect:'冲刺+1', tags:['冲刺'] },
+  { id:'her_evasion', god:'hermes', name:'闪避大师', nameEn:'Greater Evasion', type:'passive', desc:'被击中时10%几率自动闪避。', effect:'10%闪避', tags:['闪避'] },
+  { id:'her_quick_reload', god:'hermes', name:'快速装填', nameEn:'Quick Reload', type:'passive', desc:'敌人更快掉落血石(5秒)。', effect:'血石掉落加速', tags:['血石'], requires:'Infernal Soul' },
+  { id:'her_auto_reload', god:'hermes', name:'自动装填', nameEn:'Auto Reload', type:'passive', desc:'更快再生血石(4.59秒)。', effect:'血石再生加速', tags:['血石'], requires:'Stygian Soul' },
+  { id:'her_flurry', god:'hermes', name:'连射', nameEn:'Flurry Cast', type:'passive', desc:'按住投射连续发射。投射速度+20%。', effect:'投射速度+20%', tags:['投射','速度'], requires:'Infernal Soul' },
+  { id:'her_side', god:'hermes', name:'副业', nameEn:'Side Hustle', type:'passive', desc:'每进入房间获得+100金币。', effect:'金币+100/房', tags:['资源'] },
+  { id:'her_quick_favor', god:'hermes', name:'快速恩惠', nameEn:'Quick Favor', type:'passive', desc:'神圣计量表自动充能(+1%每2秒)。', effect:'自动充能', tags:['充能'] },
+  { id:'her_second', god:'hermes', name:'第二口气', nameEn:'Second Wind', type:'passive', desc:'使用Call后获得30%闪避和移速10秒。', effect:'闪避+30%, 10秒', tags:['闪避','速度'] },
+  { id:'her_recovery', god:'hermes', name:'快速恢复', nameEn:'Quick Recovery', type:'passive', desc:'受伤后冲刺恢复30%损失生命。', effect:'恢复30%损失生命', tags:['生存'] },
+  { id:'her_hyper', god:'hermes', name:'超级冲刺', nameEn:'Hyper Sprint', type:'passive', desc:'冲刺后短暂坚毅+100%移速。', effect:'持续0.5秒', tags:['冲刺','速度'] },
+  { id:'her_rush', god:'hermes', name:'快速投递', nameEn:'Rush Delivery', type:'passive', desc:'基于额外移速的额外伤害(50%)。', effect:'速度转伤害50%', tags:['速度','增伤'] },
+
+  // ===== Chaos =====
+  { id:'chaos_defiance', god:'chaos', name:'反抗', nameEn:'Defiance', type:'legendary', desc:'获得+1死亡抗拒（本次逃脱）。', effect:'死亡抗拒+1', tags:['生存','传奇'] },
+  { id:'chaos_strike', god:'chaos', name:'混沌之击', nameEn:'Chaos Strike', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后攻击伤害+30%~40%。', effect:'攻击伤害+30~40%', tags:['赌注','增伤'] },
+  { id:'chaos_flourish', god:'chaos', name:'混沌绽放', nameEn:'Chaos Flourish', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后特殊伤害+30%~60%。', effect:'特殊伤害+30~60%', tags:['赌注','增伤'] },
+  { id:'chaos_shot', god:'chaos', name:'混沌射击', nameEn:'Chaos Shot', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后投射伤害+30%~40%。', effect:'投射伤害+30~40%', tags:['赌注','增伤'] },
+  { id:'chaos_grasp', god:'chaos', name:'混沌掌控', nameEn:'Chaos Grasp', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后获得+25~50最大生命。', effect:'最大生命+25~50', tags:['赌注','生存'] },
+  { id:'chaos_assault', god:'chaos', name:'混沌突击', nameEn:'Chaos Assault', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后对未受伤敌人伤害+30%~40%。', effect:'首击增伤+30~40%', tags:['赌注','增伤'] },
+  { id:'chaos_ambush', god:'chaos', name:'混沌伏击', nameEn:'Chaos Ambush', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后从背后攻击伤害+40%~60%。', effect:'背刺增伤+40~60%', tags:['赌注','增伤'] },
+  { id:'chaos_favor', god:'chaos', name:'混沌恩惠', nameEn:'Chaos Favor', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后祝福出现稀有及以上几率+11%~20%。', effect:'稀有几率+11~20%', tags:['赌注','品质'] },
+  { id:'chaos_affluence', god:'chaos', name:'混沌富足', nameEn:'Chaos Affluence', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后拾取金币价值+30%~50%。', effect:'金币+30~50%', tags:['赌注','资源'] },
+  { id:'chaos_eclipse', god:'chaos', name:'混沌蚀变', nameEn:'Chaos Eclipse', type:'passive', desc:'【诅咒→祝福】先承受3~5遭遇的诅咒，之后黑暗与宝石奖励+75%~100%。', effect:'黑暗宝石+75~100%', tags:['赌注','资源'] },
+];
+
+// Duo Boons — data verified against Hades Wiki
+const DUO_BOONS = [
+  { id:'duo_longing', gods:['aphrodite','ares'], name:'渴望诅咒', nameEn:'Curse of Longing', desc:'毁灭效果持续打击虚弱敌人（每次击打造成上次50%伤害递减）。', reqs:'阿佛洛狄忒核心祝福（攻击/特殊/投射/冲刺）+ 阿瑞斯毁灭祝福（痛苦诅咒/疼痛诅咒）' },
+  { id:'duo_heartrend', gods:['aphrodite','artemis'], name:'心碎撕裂', nameEn:'Heart Rend', desc:'暴击对虚弱敌人额外+150%伤害。', reqs:'阿佛洛狄忒核心祝福 + 阿尔忒弥斯核心祝福' },
+  { id:'duo_parting', gods:['aphrodite','athena'], name:'离别射击', nameEn:'Parting Shot', desc:'投射获得背刺加成（+35%额外伤害）。', reqs:'阿佛洛狄忒核心祝福 + 雅典娜核心祝福（偏转能力）' },
+  { id:'duo_cold', gods:['aphrodite','demeter'], name:'冰冷拥抱', nameEn:'Cold Embrace', desc:'水晶光束改为朝你发射，持续时间+4秒，投射伤害+30%。', reqs:'阿佛洛狄忒核心祝福 + 德墨忒尔水晶光束' },
+  { id:'duo_low_tol', gods:['aphrodite','dionysus'], name:'低耐受力', nameEn:'Low Tolerance', desc:'宿醉效果对虚弱敌人可额外叠加3层（共8层）。', reqs:'阿佛洛狄忒核心祝福 + 狄俄尼索斯宿醉祝福' },
+  { id:'duo_nectar', gods:['aphrodite','poseidon'], name:'甜蜜琼浆', nameEn:'Sweet Nectar', desc:'力量石榴效果额外+1级。', reqs:'阿佛洛狄忒核心祝福 + 波塞冬核心祝福' },
+  { id:'duo_smoldering', gods:['aphrodite','zeus'], name:'闷热空气', nameEn:'Smoldering Air', desc:'神圣计量表自动充能（1%/0.2秒），但上限限制为25%。', reqs:'阿佛洛狄忒核心祝福 + 宙斯核心祝福' },
+  { id:'duo_hunting', gods:['artemis','ares'], name:'狩猎刀刃', nameEn:'Hunting Blades', desc:'投射物变为更快追踪敌人的刀刃裂隙（搜寻持续3.3秒）。', reqs:'阿尔忒弥斯核心祝福 + 阿瑞斯切割射击' },
+  { id:'duo_deadly_rev', gods:['artemis','athena'], name:'致命反击', nameEn:'Deadly Reversal', desc:'偏转后短暂获得+20%暴击几率（持续2秒）。', reqs:'阿尔忒弥斯核心祝福 + 雅典娜偏转祝福（神圣打击/神圣绽放）' },
+  { id:'duo_crystal', gods:['artemis','demeter'], name:'水晶清晰', nameEn:'Crystal Clarity', desc:'水晶光束伤害+10%，追踪敌人更有效。', reqs:'阿尔忒弥斯核心祝福 + 德墨忒尔水晶光束' },
+  { id:'duo_split', gods:['artemis','dionysus'], name:'分裂头痛', nameEn:'Splitting Headache', desc:'敌人每层宿醉使对其暴击几率+1.5%。', reqs:'阿尔忒弥斯核心祝福 + 狄俄尼索斯核心祝福' },
+  { id:'duo_mirage', gods:['artemis','poseidon'], name:'幻影射击', nameEn:'Mirage Shot', desc:'投射物额外发射第二发（造成30%伤害）。', reqs:'阿尔忒弥斯核心祝福 + 波塞冬核心祝福' },
+  { id:'duo_rod', gods:['artemis','zeus'], name:'避雷针', nameEn:'Lightning Rod', desc:'地上的血石每秒对附近敌人发射闪电打击（伤害70）。', reqs:'阿尔忒弥斯核心祝福 + 宙斯核心祝福 + 地狱之魂（Infernal Soul）' },
+  { id:'duo_merciful', gods:['athena','ares'], name:'仁慈终结', nameEn:'Merciful End', desc:'可偏转的能力命中后立即激活毁灭效果（毁灭combo伤害40）。', reqs:'雅典娜偏转祝福（神圣打击/神圣绽放）+ 阿瑞斯毁灭祝福（痛苦诅咒/疼痛诅咒）' },
+  { id:'duo_roots', gods:['athena','demeter'], name:'顽固之根', nameEn:'Stubborn Roots', desc:'无死亡抗拒时，每秒恢复1生命（每0.8秒回复1HP）。', reqs:'雅典娜核心祝福 + 德墨忒尔核心祝福' },
+  { id:'duo_phalanx', gods:['athena','zeus'], name:'闪电方阵', nameEn:'Lightning Phalanx', desc:'方阵射击在敌人间弹射（最多3次）。', reqs:'雅典娜方阵射击 + 宙斯任意核心祝福' },
+  { id:'duo_calculated', gods:['athena','dionysus'], name:'计算风险', nameEn:'Calculated Risk', desc:'敌人远程弹幕速度减慢50%。', reqs:'雅典娜偏转祝福 + 狄俄尼索斯核心祝福' },
+  { id:'duo_unshakable', gods:['athena','poseidon'], name:'不动如山', nameEn:'Unshakeable Mettle', desc:'免疫眩晕效果，对Boss伤害减免+10%。', reqs:'雅典娜核心祝福 + 波塞冬核心祝福' },
+  { id:'duo_freezing', gods:['ares','demeter'], name:'冰冻漩涡', nameEn:'Freezing Vortex', desc:'投射物刀刃裂隙施加冰冻，但范围更小(-15%)、移动更慢。', reqs:'阿瑞斯切割射击 + 德墨忒尔任意核心祝福' },
+  { id:'duo_nausea', gods:['ares','dionysus'], name:'恶心诅咒', nameEn:'Curse of Nausea', desc:'宿醉伤害触发频率更快（0.5秒→0.35秒）。', reqs:'阿瑞斯毁灭祝福 + 狄俄尼索斯核心祝福' },
+  { id:'duo_drowning', gods:['ares','poseidon'], name:'溺水诅咒', nameEn:'Curse of Drowning', desc:'洪水射击变为围绕你周围的3次范围脉冲攻击。', reqs:'阿瑞斯核心祝福 + 波塞冬洪水射击' },
+  { id:'duo_vengeful', gods:['ares','zeus'], name:'复仇情绪', nameEn:'Vengeful Mood', desc:'复仇效果自动每3秒触发一次（需至少拥有1个复仇祝福）。', reqs:'阿瑞斯核心祝福 + 宙斯核心祝福 + 任意复仇祝福' },
+  { id:'duo_icewine', gods:['demeter','dionysus'], name:'冰酒', nameEn:'Ice Wine', desc:'投射物爆炸产生冰冻节日迷雾（爆炸伤害+30%，施加冰冻）。', reqs:'德墨忒尔核心祝福 + 狄俄尼索斯迷幻射击' },
+  { id:'duo_coldfusion', gods:['demeter','zeus'], name:'冷聚变', nameEn:'Cold Fusion', desc:'Jolted效果在敌人攻击后不消失（持续10秒）。', reqs:'德墨忒尔核心祝福 + 宙斯静电释放' },
+  { id:'duo_blizzard', gods:['demeter','poseidon'], name:'暴风雪射击', nameEn:'Blizzard Shot', desc:'投射物缓慢移动，穿透敌人并发射碎片（碎片伤害40）。', reqs:'德墨忒尔核心祝福 + 波塞冬洪水射击' },
+  { id:'duo_scintillating', gods:['dionysus','zeus'], name:'璀璨盛宴', nameEn:'Scintillating Feast', desc:'节日迷雾周期性对内部敌人造成闪电伤害（60）。', reqs:'狄俄尼索斯迷幻射击 + 宙斯任意核心祝福' },
+  { id:'duo_exclusive', gods:['dionysus','poseidon'], name:'专属通道', nameEn:'Exclusive Access', desc:'你找到的所有祝福最低为史诗品质。', reqs:'狄俄尼索斯核心祝福 + 波塞冬核心祝福' },
+  { id:'duo_seastorm', gods:['poseidon','zeus'], name:'海上风暴', nameEn:'Sea Storm', desc:'击退效果同时使闪电打击敌人（伤害40）。', reqs:'波塞冬核心祝福 + 宙斯核心祝福' },
+];
+
+// Legendary Boons — data verified against Hades Wiki
+const LEGENDARY_BOONS = [
+  { id:'leg_unhealthy', god:'aphrodite', name:'不健康迷恋', nameEn:'Unhealthy Fixation', desc:'虚弱效果有15%几率魅惑敌人（持续4秒）。', reqs:'1个核心祝福（攻击/特殊/投射/冲刺）+ 内心空虚/甜蜜屈服/破碎决心 中选1个' },
+  { id:'leg_vicious', god:'ares', name:'恶性循环', nameEn:'Vicious Cycle', desc:'刀刃裂隙每次连续命中，伤害递增+2。', reqs:'黑金属 或 吞噬漩涡 中选1个' },
+  { id:'leg_loaded', god:'artemis', name:'全副武装', nameEn:'Fully Loaded', desc:'投射血石数量+2。', reqs:'支援火力/穴位攻击/出口创伤 中选2个' },
+  { id:'leg_divine', god:'athena', name:'神圣保护', nameEn:'Divine Protection', desc:'获得屏障，每20秒冷却自动抵消一次伤害。', reqs:'华丽反击' },
+  { id:'leg_winter', god:'demeter', name:'冬季丰收', nameEn:'Winter Harvest', desc:'冰冻敌人在生命值剩余10%时直接碎裂，冰冻附近敌人（伤害50）。', reqs:'致命冰冻/贪婪意志/极地爆发 中选2个' },
+  { id:'leg_blackout', god:'dionysus', name:'断片', nameEn:'Black Out', desc:'宿醉敌人在节日迷雾中受到额外+60%伤害。', reqs:'迷幻射击 + 任意宿醉核心祝福（醉意打击/醉意绽放/醉意冲刺）' },
+  { id:'leg_recall', god:'hermes', name:'伟大召回', nameEn:'Greater Recall', desc:'血石自动返回你身边。', reqs:'连射/快速装填 中选1个 + 地狱之魂（Infernal Soul）' },
+  { id:'leg_badnews', god:'hermes', name:'坏消息', nameEn:'Bad News', desc:'对没有血石嵌入的敌人，投射伤害+50%。', reqs:'自动装填 + 冥河之魂（Stygian Soul）' },
+  { id:'leg_second_wave', god:'poseidon', name:'第二波', nameEn:'Second Wave', desc:'击退效果在短暂延迟后额外推动一次。', reqs:'1个波塞冬核心祝福 + 台风之怒/碎浪 中选1个' },
+  { id:'leg_huge', god:'poseidon', name:'大丰收', nameEn:'Huge Catch', desc:'每房间出现钓鱼点几率+20%。', reqs:'沉没宝藏/海洋恩赐 中选2个' },
+  { id:'leg_splitting', god:'zeus', name:'分裂闪电', nameEn:'Splitting Bolt', desc:'所有闪电效果额外产生伤害爆发（伤害40）。', reqs:'风暴闪电/双重打击/高压电 中选1个' },
+  { id:'leg_defiance', god:'chaos', name:'反抗', nameEn:'Defiance', desc:'获得+1死亡抗拒（本次逃脱）。', reqs:'任意混沌祝福' },
+];
+
+// Weapons — data verified against Hades Wiki
+const WEAPONS = [
+  {
+    id:'stygian_blade', name:'冥界之刃', nameEn:'Stygian Blade (Stygius)', icon:'🗡️',
+    unlock:'默认解锁', originalUser:'扎格列欧斯',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'攻击速度与移动速度+3%~15%', hidden:false },
+      { name:'涅墨西斯形态', nameEn:'Aspect of Nemesis', desc:'特殊攻击后3秒内攻击获得+15%~30%暴击几率', hidden:false },
+      { name:'波塞冬形态', nameEn:'Aspect of Poseidon', desc:'特殊攻击可弹出敌人身上的血石，投射伤害+10%~50%', hidden:false },
+      { name:'亚瑟形态', nameEn:'Aspect of Arthur', desc:'圣剑Excalibur，独特重击招式。特殊创建神圣领域(减伤20%~40%，减缓投射物)，生命+50', hidden:true }
+    ]
+  },
+  {
+    id:'eternal_spear', name:'永恒之枪', nameEn:'Eternal Spear (Varatha)', icon:'🔱',
+    unlock:'4 冥界钥匙', originalUser:'哈迪斯',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'特殊攻击伤害、范围与速度+10%~25%', hidden:false },
+      { name:'阿喀琉斯形态', nameEn:'Aspect of Achilles', desc:'投枪后可Raging Rush冲刺取回，之后4次攻击或投射伤害+50%~150%', hidden:false },
+      { name:'哈迪斯形态', nameEn:'Aspect of Hades', desc:'旋转攻击变为Punishing Sweep，大范围，被命中敌人10秒内受到+30%~150%额外伤害', hidden:false },
+      { name:'关羽形态', nameEn:'Aspect of Guan Yu', desc:'霜寒偃月刀。旋转攻击为远程投射物并回复生命。生命与治疗-70%~-50%', hidden:true }
+    ]
+  },
+  {
+    id:'shield_chaos', name:'混沌之盾', nameEn:'Shield of Chaos (Aegis)', icon:'🛡️',
+    unlock:'3 冥界钥匙', originalUser:'宙斯与雅典娜',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'攻击与冲刺攻击伤害+3~15', hidden:false },
+      { name:'混沌形态', nameEn:'Aspect of Chaos', desc:'盾冲后特殊攻击投掷额外+1~5面盾牌', hidden:false },
+      { name:'宙斯形态', nameEn:'Aspect of Zeus', desc:'特殊攻击变为Blitz Disc：旋转飞盘持续攻击敌人(每0.3秒8~30伤害)，可同时普攻', hidden:false },
+      { name:'贝奥武夫形态', nameEn:'Aspect of Beowulf', desc:'Naegling\'s Board。盾冲可载入血石造成Dragon Rush大范围爆炸(+20%~100%)，但受伤害+10%', hidden:true }
+    ]
+  },
+  {
+    id:'heart_bow', name:'追心之弓', nameEn:'Heart-Seeking Bow (Coronacht)', icon:'🏹',
+    unlock:'1 冥界钥匙', originalUser:'赫拉',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'攻击暴击几率+3%~15%', hidden:false },
+      { name:'喀戎形态', nameEn:'Aspect of Chiron', desc:'特殊攻击自动追踪上次被攻击命中的敌人(4~8发箭)', hidden:false },
+      { name:'赫拉形态', nameEn:'Aspect of Hera', desc:'血石载入攻击中，命中时触发投射效果。血石掉落时间10~5秒', hidden:false },
+      { name:'罗摩形态', nameEn:'Aspect of Rama', desc:'Celestial Sharanga。蓄力攻击极强，特殊发射3发弹射箭施加Shared Suffering(7秒内对标记敌人伤害+30%~60%)', hidden:true }
+    ]
+  },
+  {
+    id:'twin_fists', name:'玛尔丰双拳', nameEn:'Twin Fists of Malphon', icon:'🥊',
+    unlock:'8 冥界钥匙 (需先解锁前4种武器)', originalUser:'德墨忒尔',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'闪避几率+5%~15%', hidden:false },
+      { name:'塔洛斯形态', nameEn:'Aspect of Talos', desc:'特殊攻击变为Magnetic Cutter：磁力拉近敌人(20伤害)，4秒内攻击与投射伤害+8%~40%', hidden:false },
+      { name:'德墨忒尔形态', nameEn:'Aspect of Demeter', desc:'12次连续命中后，下次特殊攻击额外击中1~5次', hidden:false },
+      { name:'吉尔伽美什形态', nameEn:'Aspect of Gilgamesh', desc:'Claws of Enkidu。冲刺上勾拳施加Maim(敌人受伤+25%但伤害+50%，4秒后爆发100~400伤害)，冲刺次数+2', hidden:true }
+    ]
+  },
+  {
+    id:'adamant_rail', name:'坚冥轨', nameEn:'Adamant Rail (Exagryph)', icon:'🔫',
+    unlock:'8 冥界钥匙 (需先解锁所有其他武器)', originalUser:'赫斯提亚',
+    aspects: [
+      { name:'扎格列欧斯形态', nameEn:'Aspect of Zagreus', desc:'弹药容量+4~12', hidden:false },
+      { name:'厄里斯形态', nameEn:'Aspect of Eris', desc:'吸收特殊攻击(手雷)爆炸后，获得+12%~60%全局伤害加成，持续8秒', hidden:false },
+      { name:'赫斯提亚形态', nameEn:'Aspect of Hestia', desc:'手动装填后，下一发射击为强化射击(50~150基础伤害)', hidden:false },
+      { name:'路西法形态', nameEn:'Aspect of Lucifer', desc:'Igneus Eden。攻击变为持续光束(递增伤害)，特殊投放Hellfire能量球造成脉冲AOE(爆炸100伤害)', hidden:true }
+    ]
+  }
+];
+
+// Build presets - weapon-based
+const WEAPON_BUILDS = {
+  'stygian_blade': [
+    { name:'⚡ 闪电狂战士', desc:'利用冥界之刃的高攻速快速叠加闪电链，配合暴击和毁灭打出爆炸伤害。', color:'var(--zeus)',
+      boons:[
+        {name:'闪电打击',god:'宙斯',effect:'攻击释放链式闪电'},
+        {name:'风暴闪电',god:'宙斯',effect:'弹射次数+2'},
+        {name:'双重打击',god:'宙斯',effect:'25%双击'},
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'穴位攻击',god:'阿尔忒弥斯',effect:'全局暴击+2%'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'分裂闪电(传奇)',god:'宙斯',effect:'闪电额外爆发'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+      ]},
+    { name:'💀 毁灭收割者', desc:'以阿瑞斯毁灭为核心，配合高攻速快速叠加毁灭层数，让敌人在持续伤害中倒下。', color:'var(--ares)',
+      boons:[
+        {name:'痛苦诅咒',god:'阿瑞斯',effect:'攻击施加毁灭'},
+        {name:'厄运临头',god:'阿瑞斯',effect:'多层毁灭加成'},
+        {name:'末日将至',god:'阿瑞斯',effect:'毁灭伤害+60%'},
+        {name:'杀戮冲动',god:'阿瑞斯',effect:'全局伤害+10%'},
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'攻击施加虚弱'},
+        {name:'渴望诅咒(双人)',god:'阿佛洛狄忒+阿瑞斯',effect:'毁灭打击虚弱敌人'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+      ]},
+    { name:'❄️ 冰霜之刃', desc:'利用冰冻控制敌人，配合暴击打出致命一击。攻守兼备的稳健流派。', color:'var(--demeter)',
+      boons:[
+        {name:'冰霜打击',god:'德墨忒尔',effect:'攻击施加冰冻'},
+        {name:'极地爆发',god:'德墨忒尔',effect:'10层冰冻爆炸'},
+        {name:'致命冰冻',god:'德墨忒尔',effect:'全冰冻减速掉血'},
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'干净击杀',god:'阿尔忒弥斯',effect:'暴击伤害+15%'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'冬季丰收(传奇)',god:'德墨忒尔',effect:'冰冻碎裂'},
+      ]},
+  ],
+  'eternal_spear': [
+    { name:'🌊 海神之怒', desc:'永恒之枪的范围攻击配合波塞冬击退，将敌人撞向墙壁造成毁灭性伤害。', color:'var(--poseidon)',
+      boons:[
+        {name:'风暴打击',god:'波塞冬',effect:'攻击击退+30%伤害'},
+        {name:'风暴绽放',god:'波塞冬',effect:'特殊击退+70%伤害'},
+        {name:'台风之怒',god:'波塞冬',effect:'撞墙伤害+200%'},
+        {name:'碎浪',god:'波塞冬',effect:'撞墙水波爆炸'},
+        {name:'海上风暴(双人)',god:'波塞冬+宙斯',effect:'击退触发闪电'},
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+      ]},
+    { name:'🏹 穿透猎手', desc:'阿喀琉斯形态投枪后无敌，配合阿尔忒弥斯暴击和追踪，攻防一体。', color:'var(--artemis)',
+      boons:[
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'致命绽放',god:'阿尔忒弥斯',effect:'暴击+20%'},
+        {name:'真实射击',god:'阿尔忒弥斯',effect:'追踪投射+暴击'},
+        {name:'阿尔忒弥斯之助',god:'阿尔忒弥斯',effect:'追踪箭+35%暴击'},
+        {name:'猎人标记',god:'阿尔忒弥斯',effect:'暴击标记敌人'},
+        {name:'神圣冲刺',god:'雅典娜',effect:'冲刺偏转'},
+        {name:'致命反击(双人)',god:'阿尔忒弥斯+雅典娜',effect:'偏转后暴击+20%'},
+      ]},
+  ],
+  'shield_chaos': [
+    { name:'🛡️ 偏转堡垒', desc:'混沌之盾配合雅典娜偏转，化身不可触碰的堡垒，反弹一切伤害。', color:'var(--athena)',
+      boons:[
+        {name:'神圣打击',god:'雅典娜',effect:'攻击偏转+40%伤害'},
+        {name:'神圣冲刺',god:'雅典娜',effect:'冲刺偏转'},
+        {name:'华丽反击',god:'雅典娜',effect:'偏转伤害+80%'},
+        {name:'致盲闪光',god:'雅典娜',effect:'偏转使敌人Exposed'},
+        {name:'神圣保护(传奇)',god:'雅典娜',effect:'屏障抵消伤害'},
+        {name:'仁慈终结(双人)',god:'雅典娜+阿瑞斯',effect:'偏转激活毁灭'},
+        {name:'痛苦诅咒',god:'阿瑞斯',effect:'攻击施加毁灭'},
+        {name:'闪电方阵(双人)',god:'雅典娜+宙斯',effect:'方阵弹射'},
+      ]},
+    { name:'⚡ 雷霆之盾', desc:'宙斯形态混沌之盾投掷造成爆炸，配合闪电链清场效率极高。', color:'var(--zeus)',
+      boons:[
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电'},
+        {name:'雷霆绽放',god:'宙斯',effect:'特殊闪电AOE'},
+        {name:'风暴闪电',god:'宙斯',effect:'弹射+2'},
+        {name:'双重打击',god:'宙斯',effect:'25%双击'},
+        {name:'静电释放',god:'宙斯',effect:'Jolted状态'},
+        {name:'分裂闪电(传奇)',god:'宙斯',effect:'闪电额外爆发'},
+        {name:'方阵射击',god:'雅典娜',effect:'偏转投射'},
+        {name:'闪电方阵(双人)',god:'雅典娜+宙斯',effect:'方阵弹射'},
+      ]},
+  ],
+  'heart_bow': [
+    { name:'🎯 暴击狙击手', desc:'喀戎形态穿透箭配合暴击堆叠，一箭穿心。', color:'var(--artemis)',
+      boons:[
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'真实射击',god:'阿尔忒弥斯',effect:'追踪+暴击'},
+        {name:'穴位攻击',god:'阿尔忒弥斯',effect:'全局暴击+2%'},
+        {name:'干净击杀',god:'阿尔忒弥斯',effect:'暴击伤害+15%'},
+        {name:'猎人标记',god:'阿尔忒弥斯',effect:'暴击标记'},
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'虚弱增伤'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+        {name:'全副武装(传奇)',god:'阿尔忒弥斯',effect:'投射血石+2'},
+      ]},
+    { name:'🍷 迷雾射手', desc:'利用弓的远程优势覆盖迷雾区域，控制大片战场。', color:'var(--dionysus)',
+      boons:[
+        {name:'迷幻射击',god:'狄俄尼索斯',effect:'投射产生迷雾'},
+        {name:'高耐受力',god:'狄俄尼索斯',effect:'迷雾中减伤'},
+        {name:'同侪压力',god:'狄俄尼索斯',effect:'宿醉传染'},
+        {name:'坏影响',god:'狄俄尼索斯',effect:'3+宿醉增伤50%'},
+        {name:'冰酒(双人)',god:'德墨忒尔+狄俄尼索斯',effect:'冰冻迷雾'},
+        {name:'璀璨盛宴(双人)',god:'狄俄尼索斯+宙斯',effect:'迷雾闪电'},
+        {name:'断片(传奇)',god:'狄俄尼索斯',effect:'迷雾中宿醉增伤'},
+      ]},
+  ],
+  'twin_fists': [
+    { name:'👊 暴击连打', desc:'双拳超高攻速配合暴击和虚弱，每一拳都是致命的。', color:'var(--artemis)',
+      boons:[
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'致命绽放',god:'阿尔忒弥斯',effect:'暴击+20%'},
+        {name:'穴位攻击',god:'阿尔忒弥斯',effect:'全局暴击+2%'},
+        {name:'干净击杀',god:'阿尔忒弥斯',effect:'暴击伤害+15%'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'虚弱增伤'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+        {name:'迅捷绽放',god:'赫尔墨斯',effect:'特殊速度+10%'},
+      ]},
+    { name:'💀 快速毁灭', desc:'利用双拳的高频率攻击快速叠加毁灭，让敌人来不及反应。', color:'var(--ares)',
+      boons:[
+        {name:'痛苦诅咒',god:'阿瑞斯',effect:'攻击施加毁灭'},
+        {name:'厄运临头',god:'阿瑞斯',effect:'多层毁灭加成'},
+        {name:'黑金属',god:'阿瑞斯',effect:'刀刃范围+20%'},
+        {name:'杀戮冲动',god:'阿瑞斯',effect:'全局伤害+10%'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'迅捷绽放',god:'赫尔墨斯',effect:'特殊速度+10%'},
+        {name:'渴望诅咒(双人)',god:'阿佛洛狄忒+阿瑞斯',effect:'毁灭打击虚弱'},
+        {name:'恶性循环(传奇)',god:'阿瑞斯',effect:'连续命中加伤'},
+      ]},
+  ],
+  'adamant_rail': [
+    { name:'⚡ 闪电加特林', desc:'坚冥轨的高射速配合宙斯闪电链，子弹所到之处电光四射。', color:'var(--zeus)',
+      boons:[
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电'},
+        {name:'风暴闪电',god:'宙斯',effect:'弹射+2'},
+        {name:'双重打击',god:'宙斯',effect:'25%双击'},
+        {name:'静电释放',god:'宙斯',effect:'Jolted状态'},
+        {name:'分裂闪电(传奇)',god:'宙斯',effect:'闪电额外爆发'},
+        {name:'连射',god:'赫尔墨斯',effect:'按住连续投射'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'璀璨盛宴(双人)',god:'狄俄尼索斯+宙斯',effect:'迷雾闪电'},
+      ]},
+    { name:'🎯 暴击机枪', desc:'赫斯提亚形态递增伤害配合暴击，越打越痛。', color:'var(--artemis)',
+      boons:[
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'穴位攻击',god:'阿尔忒弥斯',effect:'全局暴击+2%'},
+        {name:'干净击杀',god:'阿尔忒弥斯',effect:'暴击伤害+15%'},
+        {name:'猎人标记',god:'阿尔忒弥斯',effect:'暴击标记'},
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'虚弱增伤'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'全副武装(传奇)',god:'阿尔忒弥斯',effect:'投射血石+2'},
+      ]},
+  ]
+};
+
+// Build presets - god-based
+const GOD_BUILDS = {
+  'zeus': [
+    { name:'⚡ 闪电风暴', desc:'最大化链式闪电的弹射次数和伤害，让电弧覆盖整个战场。适合高射速武器。', color:'var(--zeus)',
+      boons:[
+        {name:'闪电打击',god:'宙斯',effect:'核心：链式闪电'},
+        {name:'风暴闪电',god:'宙斯',effect:'弹射+2'},
+        {name:'双重打击',god:'宙斯',effect:'25%双击'},
+        {name:'高压电',god:'宙斯',effect:'范围+600'},
+        {name:'静电释放',god:'宙斯',effect:'Jolted状态'},
+        {name:'分裂闪电(传奇)',god:'宙斯',effect:'闪电额外爆发'},
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'海上风暴(双人)',god:'波塞冬+宙斯',effect:'击退触发闪电'},
+      ]},
+    { name:'🌩️ 迷雾雷暴', desc:'结合节日迷雾的区域控制和闪电的爆发伤害，在迷雾中持续电击敌人。', color:'var(--dionysus)',
+      boons:[
+        {name:'迷幻射击',god:'狄俄尼索斯',effect:'投射产生迷雾'},
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电'},
+        {name:'静电释放',god:'宙斯',effect:'Jolted状态'},
+        {name:'璀璨盛宴(双人)',god:'狄俄尼索斯+宙斯',effect:'迷雾闪电'},
+        {name:'高耐受力',god:'狄俄尼索斯',effect:'迷雾减伤'},
+        {name:'同侪压力',god:'狄俄尼索斯',effect:'宿醉传染'},
+        {name:'风暴闪电',god:'宙斯',effect:'弹射+2'},
+        {name:'分裂闪电(传奇)',god:'宙斯',effect:'闪电额外爆发'},
+      ]},
+  ],
+  'poseidon': [
+    { name:'🌊 海啸冲击', desc:'将敌人撞向墙壁造成毁灭伤害，配合碎浪产生范围爆炸。', color:'var(--poseidon)',
+      boons:[
+        {name:'风暴打击',god:'波塞冬',effect:'击退+30%伤害'},
+        {name:'风暴绽放',god:'波塞冬',effect:'击退+70%伤害'},
+        {name:'台风之怒',god:'波塞冬',effect:'撞墙+200%'},
+        {name:'碎浪',god:'波塞冬',effect:'撞墙爆炸'},
+        {name:'巨浪拍打',god:'波塞冬',effect:'Boss增伤+20%'},
+        {name:'第二波(传奇)',god:'波塞冬',effect:'击退推两次'},
+        {name:'海上风暴(双人)',god:'波塞冬+宙斯',effect:'击退触发闪电'},
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电'},
+      ]},
+  ],
+  'athena': [
+    { name:'🛡️ 不灭堡垒', desc:'最大化偏转和防御能力，反弹一切伤害的同时用毁灭和暴击反击。', color:'var(--athena)',
+      boons:[
+        {name:'神圣打击',god:'雅典娜',effect:'偏转+40%伤害'},
+        {name:'神圣冲刺',god:'雅典娜',effect:'冲刺偏转'},
+        {name:'华丽反击',god:'雅典娜',effect:'偏转伤害+80%'},
+        {name:'致盲闪光',god:'雅典娜',effect:'偏转使Exposed'},
+        {name:'神圣保护(传奇)',god:'雅典娜',effect:'屏障'},
+        {name:'仁慈终结(双人)',god:'雅典娜+阿瑞斯',effect:'偏转激活毁灭'},
+        {name:'痛苦诅咒',god:'阿瑞斯',effect:'攻击施加毁灭'},
+        {name:'致命反击(双人)',god:'阿尔忒弥斯+雅典娜',effect:'偏转后暴击'},
+      ]},
+  ],
+  'ares': [
+    { name:'💀 毁灭领域', desc:'最大化毁灭效果的持续伤害和叠加效率，让敌人在刀刃裂隙中灰飞烟灭。', color:'var(--ares)',
+      boons:[
+        {name:'痛苦诅咒',god:'阿瑞斯',effect:'攻击施加毁灭'},
+        {name:'厄运临头',god:'阿瑞斯',effect:'多层加成'},
+        {name:'黑金属',god:'阿瑞斯',effect:'范围+20%'},
+        {name:'吞噬漩涡',god:'阿瑞斯',effect:'吸引+持续'},
+        {name:'杀戮冲动',god:'阿瑞斯',effect:'全局伤害+10%'},
+        {name:'恶性循环(传奇)',god:'阿瑞斯',effect:'连续命中加伤'},
+        {name:'渴望诅咒(双人)',god:'阿佛洛狄忒+阿瑞斯',effect:'毁灭打击虚弱'},
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'虚弱增伤'},
+      ]},
+  ],
+  'aphrodite': [
+    { name:'💕 虚弱女王', desc:'让所有敌人陷入虚弱状态，大幅降低其威胁并增加受到的伤害。', color:'var(--aphrodite)',
+      boons:[
+        {name:'心碎打击',god:'阿佛洛狄忒',effect:'攻击虚弱+50%伤害'},
+        {name:'内心空虚',god:'阿佛洛狄忒',effect:'虚弱持续+5秒'},
+        {name:'甜蜜屈服',god:'阿佛洛狄忒',effect:'虚弱敌人受伤+10%'},
+        {name:'破碎决心',god:'阿佛洛狄忒',effect:'虚弱更强'},
+        {name:'不健康迷恋(传奇)',god:'阿佛洛狄忒',effect:'虚弱15%魅惑'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'低耐受力(双人)',god:'阿佛洛狄忒+狄俄尼索斯',effect:'虚弱宿醉叠加'},
+      ]},
+  ],
+  'artemis': [
+    { name:'🏹 暴击之神', desc:'堆叠一切暴击加成，每一击都有可能成为致命一击。', color:'var(--artemis)',
+      boons:[
+        {name:'致命打击',god:'阿尔忒弥斯',effect:'暴击+15%'},
+        {name:'致命绽放',god:'阿尔忒弥斯',effect:'暴击+20%'},
+        {name:'穴位攻击',god:'阿尔忒弥斯',effect:'全局暴击+2%'},
+        {name:'干净击杀',god:'阿尔忒弥斯',effect:'暴击伤害+15%'},
+        {name:'猎人标记',god:'阿尔忒弥斯',effect:'暴击标记+30%'},
+        {name:'破甲者',god:'阿尔忒弥斯',effect:'暴击穿甲+100%'},
+        {name:'心碎撕裂(双人)',god:'阿佛洛狄忒+阿尔忒弥斯',effect:'暴击对虚弱+150%'},
+        {name:'全副武装(传奇)',god:'阿尔忒弥斯',effect:'投射血石+2'},
+      ]},
+  ],
+  'demeter': [
+    { name:'❄️ 绝对零度', desc:'冰冻一切敌人，让他们在寒冰中无法动弹，最终碎裂。', color:'var(--demeter)',
+      boons:[
+        {name:'冰霜打击',god:'德墨忒尔',effect:'攻击冰冻'},
+        {name:'极地爆发',god:'德墨忒尔',effect:'10层爆炸'},
+        {name:'致命冰冻',god:'德墨忒尔',effect:'全冰冻减速掉血'},
+        {name:'雪花爆发',god:'德墨忒尔',effect:'投射AOE冰冻'},
+        {name:'冬季丰收(传奇)',god:'德墨忒尔',effect:'冰冻碎裂'},
+        {name:'冰酒(双人)',god:'德墨忒尔+狄俄尼索斯',effect:'冰冻迷雾'},
+        {name:'冷聚变(双人)',god:'德墨忒尔+宙斯',effect:'Jolted不消失'},
+        {name:'静电释放',god:'宙斯',effect:'Jolted状态'},
+      ]},
+  ],
+  'dionysus': [
+    { name:'🍷 迷雾之王', desc:'用节日迷雾覆盖战场，宿醉传染让所有敌人持续掉血。', color:'var(--dionysus)',
+      boons:[
+        {name:'迷幻射击',god:'狄俄尼索斯',effect:'投射产生迷雾'},
+        {name:'高耐受力',god:'狄俄尼索斯',effect:'迷雾减伤'},
+        {name:'同侪压力',god:'狄俄尼索斯',effect:'宿醉传染'},
+        {name:'坏影响',god:'狄俄尼索斯',effect:'3+宿醉增伤50%'},
+        {name:'麻木感',god:'狄俄尼索斯',effect:'宿醉减速'},
+        {name:'断片(传奇)',god:'狄俄尼索斯',effect:'迷雾中宿醉增伤'},
+        {name:'冰酒(双人)',god:'德墨忒尔+狄俄尼索斯',effect:'冰冻迷雾'},
+        {name:'璀璨盛宴(双人)',god:'狄俄尼索斯+宙斯',effect:'迷雾闪电'},
+      ]},
+  ],
+  'hermes': [
+    { name:'👟 极速风暴', desc:'赫尔墨斯提供极致的速度和机动性，配合任何攻击型神明都能发挥奇效。', color:'var(--hermes)',
+      boons:[
+        {name:'迅捷打击',god:'赫尔墨斯',effect:'攻速+10%'},
+        {name:'迅捷绽放',god:'赫尔墨斯',effect:'特速+10%'},
+        {name:'极速',god:'赫尔墨斯',effect:'移速+20%'},
+        {name:'最强反射',god:'赫尔墨斯',effect:'冲刺+1'},
+        {name:'闪避大师',god:'赫尔墨斯',effect:'10%自动闪避'},
+        {name:'超级冲刺',god:'赫尔墨斯',effect:'冲刺后加速'},
+        {name:'快速投递',god:'赫尔墨斯',effect:'速度转伤害'},
+        {name:'闪电打击',god:'宙斯',effect:'链式闪电(搭配高攻速)'},
+      ]},
+  ],
+};
+
+// ==================== RENDERING ====================
+
+let currentGodFilter = 'all';
+
+function getTypeLabel(type) {
+  const map = { attack:'攻击', special:'特殊', cast:'投射', dash:'冲刺', call:'召唤', passive:'被动', duo:'双人', legendary:'传奇' };
+  return map[type] || type;
+}
+
+function getTypeClass(type) {
+  return 'type-' + type;
+}
+
+function renderGodFilter() {
+  const el = document.getElementById('godFilter');
+  let html = `<div class="god-chip active" data-god="all" onclick="setGodFilter('all')" style="color:var(--text)">
+    <span class="dot" style="background:var(--text)"></span>全部
+  </div>`;
+  for (const [id, g] of Object.entries(GODS)) {
+    html += `<div class="god-chip" data-god="${id}" onclick="setGodFilter('${id}')" style="color:${g.color}">
+      <span class="dot" style="background:${g.color}"></span>${g.icon} ${g.name}
+    </div>`;
+  }
+  // Add duo and legendary
+  html += `<div class="god-chip" data-god="duo" onclick="setGodFilter('duo')" style="color:var(--duo)">
+    <span class="dot" style="background:var(--duo)"></span>🔗 双人
+  </div>`;
+  html += `<div class="god-chip" data-god="legendary" onclick="setGodFilter('legendary')" style="color:var(--legendary)">
+    <span class="dot" style="background:var(--legendary)"></span>⭐ 传奇
+  </div>`;
+  el.innerHTML = html;
+}
+
+function setGodFilter(god) {
+  currentGodFilter = god;
+  document.querySelectorAll('.god-chip').forEach(c => c.classList.toggle('active', c.dataset.god === god));
+  filterBoons();
+}
+
+function filterBoons() {
+  const search = document.getElementById('boonSearch').value.toLowerCase();
+  const grid = document.getElementById('boonGrid');
+  let boons = [...BOONS];
+
+  // Add duo and legendary as flat items
+  const duoItems = DUO_BOONS.map(d => ({
+    id: d.id, god: d.gods[0], name: d.name, nameEn: d.nameEn,
+    type: 'duo', desc: d.desc, effect: '', tags: ['双人'],
+    duoGods: d.gods, reqs: d.reqs
+  }));
+  const legItems = LEGENDARY_BOONS.map(l => ({
+    id: l.id, god: l.god, name: l.name, nameEn: l.nameEn,
+    type: 'legendary', desc: l.desc, effect: '', tags: ['传奇'],
+    reqs: l.reqs
+  }));
+  boons = [...boons, ...duoItems, ...legItems];
+
+  // Filter by god
+  if (currentGodFilter !== 'all') {
+    if (currentGodFilter === 'duo') {
+      boons = duoItems;
+    } else if (currentGodFilter === 'legendary') {
+      boons = legItems;
+    } else {
+      boons = boons.filter(b => b.god === currentGodFilter);
+    }
+  }
+
+  // Filter by search
+  if (search) {
+    boons = boons.filter(b => {
+      const godName = GODS[b.god]?.name || '';
+      const duoGodNames = b.duoGods ? b.duoGods.map(g => GODS[g]?.name).join('') : '';
+      return b.name.toLowerCase().includes(search) ||
+             b.nameEn.toLowerCase().includes(search) ||
+             b.desc.toLowerCase().includes(search) ||
+             godName.toLowerCase().includes(search) ||
+             duoGodNames.toLowerCase().includes(search) ||
+             (b.tags && b.tags.some(t => t.toLowerCase().includes(search)));
+    });
+  }
+
+  if (boons.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>没有找到匹配的祝福</p></div>';
+    return;
+  }
+
+  grid.innerHTML = boons.map(b => {
+    const godInfo = GODS[b.god];
+    const godName = godInfo ? `${godInfo.icon} ${godInfo.name}` : '';
+    let duoInfo = '';
+    if (b.duoGods) {
+      duoInfo = b.duoGods.map(g => `${GODS[g].icon} ${GODS[g].name}`).join(' + ');
+    }
+    const dataType = b.type === 'duo' ? 'duo' : b.type === 'legendary' ? 'legendary' : b.god;
+
+    return `<div class="boon-card" data-god="${dataType}" data-type="${b.type}" onclick="showBoonDetail('${b.id}', '${b.type}')">
+      <div class="boon-header">
+        <span class="boon-name">${b.name}</span>
+        <span class="boon-type ${getTypeClass(b.type)}">${getTypeLabel(b.type)}</span>
+      </div>
+      <div class="boon-god-tag">${duoInfo || godName} · ${b.nameEn}</div>
+      <div class="boon-desc">${b.desc}</div>
+      ${b.effect ? `<div style="font-size:12px;color:var(--text-dim);margin-top:6px">📊 ${b.effect}</div>` : ''}
+      ${b.tags ? `<div class="boon-tags">${b.tags.map(t => `<span class="boon-tag">${t}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function showBoonDetail(id, type) {
+  let boon;
+  if (type === 'duo') {
+    boon = DUO_BOONS.find(d => d.id === id);
+    if (!boon) return;
+    const godsInfo = boon.gods.map(g => `<span style="color:${GODS[g].color}">${GODS[g].icon} ${GODS[g].name}</span>`).join(' + ');
+    // Find related boons
+    const relatedDuos = DUO_BOONS.filter(d => d.id !== id && d.gods.some(g => boon.gods.includes(g))).slice(0, 3);
+
+    document.getElementById('modalBody').innerHTML = `
+      <h2 style="color:var(--duo)">🔗 ${boon.name}</h2>
+      <div class="m-god">${godsInfo} · ${boon.nameEn}</div>
+      <div class="m-desc">${boon.desc}</div>
+      <div class="m-section"><h4>📋 获取条件</h4><div class="m-synergy"><div>${boon.reqs}</div></div></div>
+      ${relatedDuos.length ? `<div class="m-section"><h4>🔗 相关双人祝福</h4>
+        ${relatedDuos.map(r => `<div class="m-synergy"><span class="syn-name">${r.name}</span> <span style="color:var(--text-dim)">(${r.gods.map(g=>GODS[g].name).join('+')})</span><div class="syn-desc">${r.desc}</div></div>`).join('')}
+      </div>` : ''}
+    `;
+  } else if (type === 'legendary') {
+    boon = LEGENDARY_BOONS.find(l => l.id === id);
+    if (!boon) return;
+    const godInfo = GODS[boon.god];
+    document.getElementById('modalBody').innerHTML = `
+      <h2 style="color:var(--legendary)">⭐ ${boon.name}</h2>
+      <div class="m-god" style="color:${godInfo.color}">${godInfo.icon} ${godInfo.name} · ${boon.nameEn}</div>
+      <div class="m-desc">${boon.desc}</div>
+      <div class="m-section"><h4>📋 获取条件</h4><div class="m-synergy"><div>${boon.reqs}</div></div></div>
+    `;
+  } else {
+    boon = BOONS.find(b => b.id === id);
+    if (!boon) return;
+    const godInfo = GODS[boon.god];
+    // Find related duos
+    const relatedDuos = DUO_BOONS.filter(d => d.gods.includes(boon.god)).slice(0, 4);
+    // Find related legendaries
+    const relatedLegs = LEGENDARY_BOONS.filter(l => l.god === boon.god).slice(0, 2);
+
+    document.getElementById('modalBody').innerHTML = `
+      <h2 style="color:${godInfo.color}">${boon.name}</h2>
+      <div class="m-god" style="color:${godInfo.color}">${godInfo.icon} ${godInfo.name} · ${boon.nameEn}</div>
+      <div class="m-desc">${boon.desc}</div>
+      ${boon.effect ? `<div style="margin-bottom:16px"><strong style="color:var(--text-dim)">📊 效果数值：</strong> ${boon.effect}</div>` : ''}
+      ${boon.requires ? `<div style="margin-bottom:16px"><strong style="color:var(--text-dim)">🔒 前置要求：</strong> ${boon.requires}</div>` : ''}
+      ${boon.tags ? `<div style="margin-bottom:16px"><strong style="color:var(--text-dim)">🏷️ 标签：</strong> ${boon.tags.map(t=>`<span class="boon-tag">${t}</span>`).join(' ')}</div>` : ''}
+      ${relatedDuos.length ? `<div class="m-section"><h4>🔗 可搭配双人祝福</h4>
+        ${relatedDuos.map(d => `<div class="m-synergy"><span class="syn-name">${d.name}</span> <span style="color:var(--text-dim)">(${d.gods.map(g=>GODS[g].name).join(' + ')})</span><div class="syn-desc">${d.desc}</div></div>`).join('')}
+      </div>` : ''}
+      ${relatedLegs.length ? `<div class="m-section"><h4>⭐ 相关传奇祝福</h4>
+        ${relatedLegs.map(l => `<div class="m-synergy"><span class="syn-name" style="color:var(--legendary)">${l.name}</span><div class="syn-desc">${l.desc}</div></div>`).join('')}
+      </div>` : ''}
+    `;
+  }
+
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// Synergy page
+function renderSynergies() {
+  const grid = document.getElementById('synergyGrid');
+  grid.innerHTML = DUO_BOONS.map(d => {
+    const godsInfo = d.gods.map(g => {
+      const gi = GODS[g];
+      return `<span class="synergy-god-badge" style="background:${gi.color}22;color:${gi.color};border:1px solid ${gi.color}44">${gi.icon} ${gi.name}</span>`;
+    }).join('');
+    return `<div class="synergy-card" onclick="showBoonDetail('${d.id}','duo')">
+      <h3>🔗 ${d.name}</h3>
+      <div class="synergy-gods">${godsInfo}</div>
+      <div class="synergy-desc">${d.desc}</div>
+      <div class="synergy-req">📋 ${d.reqs}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterSynergies() {
+  const search = document.getElementById('synergySearch').value.toLowerCase();
+  const cards = document.querySelectorAll('.synergy-card');
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(search) ? '' : 'none';
+  });
+}
+
+// Weapons page
+function renderWeapons() {
+  const grid = document.getElementById('weaponGrid');
+  grid.innerHTML = WEAPONS.map(w => `
+    <div class="weapon-card">
+      <h3>${w.icon} ${w.name}</h3>
+      <div class="wsubtitle">${w.nameEn} · 解锁: ${w.unlock} · 原使用者: ${w.originalUser}</div>
+      <div class="aspect-list">
+        ${w.aspects.map(a => `
+          <div class="aspect-item">
+            <h4>${a.name} ${a.hidden ? '<span class="hidden-badge">隐藏</span>' : ''}</h4>
+            <p>${a.desc}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Build page
+function initBuildSelects() {
+  const ws = document.getElementById('buildWeaponSelect');
+  ws.innerHTML = '<option value="">-- 选择武器 --</option>' +
+    WEAPONS.map(w => `<option value="${w.id}">${w.icon} ${w.name}</option>`).join('');
+
+  const gs = document.getElementById('buildGodSelect');
+  gs.innerHTML = '<option value="">-- 选择主神 --</option>' +
+    Object.entries(GODS).filter(([id]) => id !== 'chaos').map(([id, g]) =>
+      `<option value="${id}">${g.icon} ${g.name}</option>`
+    ).join('');
+}
+
+function onWeaponChange() {
+  const wid = document.getElementById('buildWeaponSelect').value;
+  const as = document.getElementById('buildAspectSelect');
+  if (!wid) {
+    as.innerHTML = '<option value="">-- 先选择武器 --</option>';
+    return;
+  }
+  const weapon = WEAPONS.find(w => w.id === wid);
+  as.innerHTML = '<option value="">-- 全部形态 --</option>' +
+    weapon.aspects.map((a, i) => `<option value="${i}">${a.name}${a.hidden ? ' (隐藏)' : ''}</option>`).join('');
+}
+
+document.getElementById('buildWeaponSelect').addEventListener('change', onWeaponChange);
+
+function generateWeaponBuild() {
+  const wid = document.getElementById('buildWeaponSelect').value;
+  const result = document.getElementById('weaponBuildResult');
+
+  if (!wid) {
+    // Random weapon
+    const keys = Object.keys(WEAPON_BUILDS);
+    const rk = keys[Math.floor(Math.random() * keys.length)];
+    document.getElementById('buildWeaponSelect').value = rk;
+    onWeaponChange();
+    renderWeaponBuild(rk);
+    return;
+  }
+
+  renderWeaponBuild(wid);
+}
+
+function renderWeaponBuild(wid) {
+  const builds = WEAPON_BUILDS[wid];
+  if (!builds || builds.length === 0) {
+    document.getElementById('weaponBuildResult').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>该武器暂无推荐流派</p></div>';
+    document.getElementById('weaponBuildResult').classList.add('show');
+    return;
+  }
+
+  const weapon = WEAPONS.find(w => w.id === wid);
+  document.getElementById('weaponBuildResult').innerHTML = `
+    <div style="margin-bottom:16px;color:var(--text-dim);font-size:14px">
+      ${weapon.icon} <strong>${weapon.name}</strong> 的推荐流派（共 ${builds.length} 套）
+    </div>
+    ${builds.map(b => renderBuildCard(b)).join('')}
+  `;
+  document.getElementById('weaponBuildResult').classList.add('show');
+}
+
+function generateGodBuild() {
+  const gid = document.getElementById('buildGodSelect').value;
+  const result = document.getElementById('godBuildResult');
+
+  if (!gid) {
+    const keys = Object.keys(GOD_BUILDS);
+    const rk = keys[Math.floor(Math.random() * keys.length)];
+    document.getElementById('buildGodSelect').value = rk;
+    renderGodBuild(rk);
+    return;
+  }
+
+  renderGodBuild(gid);
+}
+
+function renderGodBuild(gid) {
+  const builds = GOD_BUILDS[gid];
+  if (!builds || builds.length === 0) {
+    document.getElementById('godBuildResult').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>该神明暂无推荐流派</p></div>';
+    document.getElementById('godBuildResult').classList.add('show');
+    return;
+  }
+
+  const god = GODS[gid];
+  document.getElementById('godBuildResult').innerHTML = `
+    <div style="margin-bottom:16px;color:var(--text-dim);font-size:14px">
+      ${god.icon} <strong>${god.name}</strong> 的推荐流派（共 ${builds.length} 套）
+    </div>
+    ${builds.map(b => renderBuildCard(b)).join('')}
+  `;
+  document.getElementById('godBuildResult').classList.add('show');
+}
+
+function renderBuildCard(build) {
+  return `<div class="build-card">
+    <h3 style="color:${build.color}">${build.name}</h3>
+    <div class="build-desc">${build.desc}</div>
+    <div class="build-boons">
+      ${build.boons.map((b, i) => {
+        // Try to find god color
+        let borderColor = 'var(--text-dim)';
+        for (const [gid, g] of Object.entries(GODS)) {
+          if (b.god.includes(g.name)) { borderColor = g.color; break; }
+        }
+        return `<div class="build-boon-item" style="border-left-color:${borderColor}">
+          <span class="build-priority">${i + 1}</span>
+          <div>
+            <div class="bname">${b.name}</div>
+            <div class="bgod">${b.god}</div>
+          </div>
+          <div class="beffect">${b.effect}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function switchBuildMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('build-weapon').style.display = mode === 'weapon' ? '' : 'none';
+  document.getElementById('build-god').style.display = mode === 'god' ? '' : 'none';
+}
+
+// Page switching
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Keyboard shortcut to close modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ==================== Knowledge Base ====================
+// 从 server/knowledge.py 移植的纯前端知识库
+const KNOWLEDGE_DOCS = [];
+
+function addKb(title, content) { KNOWLEDGE_DOCS.push({ title, content }); }
+
+// === 神明信息 ===
+addKb("⚡ 宙斯 (Zeus)", "宙斯是闪电之神，掌管天空与雷霆。祝福以链式闪电为核心，在敌人间弹射造成范围伤害。\n状态诅咒：Jolted（电击）— 敌人攻击时会对自己造成伤害\n信物：雷霆信物 (Thunder Signet)\n打法风格：适合高攻速武器，闪电链清场效率极高");
+
+addKb("🌊 波塞冬 (Poseidon)", "波塞冬是海神，掌管海洋与地震。祝福以击退为核心，将敌人撞向墙壁造成额外伤害。\n状态诅咒：Rupture（割裂）— 敌人移动时受到持续伤害\n信物：海螺壳 (Conch Shell)\n打法风格：适合在狭窄地图作战，撞墙伤害极高");
+
+addKb("🛡️ 雅典娜 (Athena)", "雅典娜是智慧与战争女神。祝福以偏转（Deflect）为核心，可反弹敌方弹幕。\n状态诅咒：Exposed（暴露）— 敌人受到背刺伤害+50%\n信物：猫头鹰吊坠 (Owl Pendant)\n打法风格：防御型打法首选，偏转提供极高生存能力");
+
+addKb("🗡️ 阿瑞斯 (Ares)", "阿瑞斯是战神，掌管战争与毁灭。祝福以毁灭（Doom）为核心，延迟爆发高额伤害。\n状态诅咒：Doom（毁灭）— 延迟后造成一次性高额伤害\n信物：血之瓶 (Blood-Filled Vial)\n打法风格：适合打一波爆发的玩法，配合多次施加叠加毁灭");
+
+addKb("💕 阿佛洛狄忒 (Aphrodite)", "阿佛洛狄忒是爱与美之神。祝福以虚弱（Weak）为核心，降低敌人造成的伤害。\n状态诅咒：Weak（虚弱）— 敌人造成伤害-30%（最高可叠至-47%）\n信物：永恒玫瑰 (Eternal Rose)\n打法风格：提供最高增伤倍率和强力减伤，攻守兼备");
+
+addKb("🏹 阿尔忒弥斯 (Artemis)", "阿尔忒弥斯是狩猎女神。祝福以暴击为核心，提供高额暴击几率和暴击伤害加成。\n状态诅咒：Marked（标记）— 被命中后有几率标记敌人，被标记者暴击率+30%\n信物：翡翠箭头 (Adamant Arrowhead)\n打法风格：追求高爆发暴击伤害的玩家首选");
+
+addKb("❄️ 德墨忒尔 (Demeter)", "德墨忒尔是丰收与季节女神。祝福以冰冻（Chill）为核心，减速敌人并在10层后爆炸。\n状态诅咒：Chill（冰冻）— 逐层减速，叠满10层引发爆炸并清除效果\n信物：冰霜花环 (Frostbitten Horn)\n打法风格：控制型打法，冰冻让敌人几乎无法行动");
+
+addKb("🍷 狄俄尼索斯 (Dionysus)", "狄俄尼索斯是酒神，掌管葡萄酒与狂欢。祝福以宿醉（Hangover）为核心，持续的DoT伤害。\n状态诅咒：Hangover（宿醉）— 每0.5秒造成伤害，最高叠加5层（低耐受力双人祝福可至8层）\n信物：满溢之杯 (Overflowing Cup)\n打法风格：持续伤害型，叠满宿醉后伤害可观");
+
+addKb("👟 赫尔墨斯 (Hermes)", "赫尔墨斯是奥林匹斯信使。祝福以速度和闪避为核心，提升攻击速度、移动速度和闪避几率。\n信物：羽翼之鞋 (Lambent Plume)\n特殊：不能通过信物强制遭遇\n打法风格：提升整体机动性和操作手感，几乎任何流派都受益");
+
+addKb("🌀 混沌 (Chaos)", "混沌是原始混沌之神。祝福以「先诅咒后祝福」为核心，承受3~5次遭遇的负面效果后获得永久增益。\n信物：宇宙之卵 (Cosmic Egg)\n特殊：混沌之门随机出现在房间中\n打法风格：有风险有回报，混沌祝福可以极大提升上限");
+
+// === 武器知识 ===
+addKb("武器总览",
+"=== 哈迪斯6把冥界武器 ===\n\n" +
+"1. 冥界之刃 Stygian Blade (Stygius)\n原使用者：扎格列欧斯 | 解锁：默认\n形态：\n* 扎格列欧斯：攻速和移速+3%~15%\n* 涅墨西斯：特殊攻击后3秒，攻击获得+15%~30%暴击\n* 波塞冬：特殊攻击可弹出血石，投射伤害+10%~50%\n* 亚瑟(隐藏)：圣剑Excalibur，特殊创建神圣领域（减伤20%~40%），生命+50\n\n" +
+"2. 永恒之枪 Eternal Spear (Varatha)\n原使用者：哈迪斯 | 解锁：4冥界钥匙\n形态：\n* 扎格列欧斯：特殊伤害/范围/速度+10%~25%\n* 阿喀琉斯：投枪后Raging Rush冲刺取回，之后4次攻击/投射伤害+50%~150%\n* 哈迪斯：旋转攻击变大范围Punishing Sweep，被命中敌人10秒内受伤+30%~150%\n* 关羽(隐藏)：霜寒偃月刀，旋转攻击为远程回复弹，生命与治疗-70%~-50%\n\n" +
+"3. 混沌之盾 Shield of Chaos (Aegis)\n原使用者：宙斯与雅典娜 | 解锁：3冥界钥匙\n形态：\n* 扎格列欧斯：攻击与冲刺攻击伤害+3~15\n* 混沌：盾冲后特殊额外投掷+1~5面盾牌\n* 宙斯：特殊变为Blitz Disc持续旋转攻击，可同时普攻\n* 贝奥武夫(隐藏)：盾冲载入血石造成Dragon Rush爆炸，受伤+10%\n\n" +
+"4. 追心之弓 Heart-Seeking Bow (Coronacht)\n原使用者：赫拉 | 解锁：1冥界钥匙\n形态：\n* 扎格列欧斯：攻击暴击+3%~15%\n* 喀戎：特殊自动追踪上次被攻击命中的敌人(4~8发)\n* 赫拉：血石载入攻击，命中时触发投射效果\n* 罗摩(隐藏)：Celestial Sharanga，蓄力攻击极强，特殊施加Shared Suffering\n\n" +
+"5. 玛尔丰双拳 Twin Fists of Malphon\n原使用者：德墨忒尔 | 解锁：8冥界钥匙（需先解锁前4种武器）\n形态：\n* 扎格列欧斯：闪避+5%~15%\n* 塔洛斯：特殊变Magnetic Cutter，磁力拉近敌人，4秒内增伤+8%~40%\n* 德墨忒尔：12连击后下次特殊额外击中1~5次\n* 吉尔伽美什(隐藏)：Claws of Enkidu，冲刺上勾拳施加Maim，冲刺次数+2\n\n" +
+"6. 坚冥轨 Adamant Rail (Exagryph)\n原使用者：赫斯提亚 | 解锁：8冥界钥匙（需先解锁所有其他武器）\n形态：\n* 扎格列欧斯：弹药容量+4~12\n* 厄里斯：吸收手雷爆炸后8秒内全局增伤+12%~60%\n* 赫斯提亚：手动装填后下一发为强化射击(50~150伤害)\n* 路西法(隐藏)：Igneus Eden，攻击变持续光束，特殊投放Hellfire能量球");
+
+// === 双人祝福 ===
+addKb("双人祝福",
+"=== 哈迪斯28个双人祝福 (Duo Boons) ===\n双人祝福需要至少1个来自每位相关神明的合格祝福才能触发。\n\n" +
+"【阿佛洛狄忒 + 阿瑞斯】渴望诅咒 (Curse of Longing)：毁灭效果持续打击虚弱敌人，每次50%递减。\n" +
+"【阿佛洛狄忒 + 阿尔忒弥斯】心碎撕裂 (Heart Rend)：暴击对虚弱敌人额外+150%伤害。最强增伤双人祝福之一。\n" +
+"【阿佛洛狄忒 + 雅典娜】离别射击 (Parting Shot)：投射获得背刺加成（+35%）。\n" +
+"【阿佛洛狄忒 + 德墨忒尔】冰冷拥抱 (Cold Embrace)：水晶光束朝你发射，持续+4秒，投射伤害+30%。\n" +
+"【阿佛洛狄忒 + 狄俄尼索斯】低耐受力 (Low Tolerance)：虚弱敌人宿醉可叠加至8层。\n" +
+"【阿佛洛狄忒 + 波塞冬】甜蜜琼浆 (Sweet Nectar)：力量石榴效果额外+1级。\n" +
+"【阿佛洛狄忒 + 宙斯】闷热空气 (Smoldering Air)：神圣计量表自动充能但上限25%。\n\n" +
+"【阿尔忒弥斯 + 阿瑞斯】狩猎刀刃 (Hunting Blades)：刀刃裂隙更快并自动追踪敌人。\n" +
+"【阿尔忒弥斯 + 雅典娜】致命反击 (Deadly Reversal)：偏转后短暂+20%暴击率(2秒)。\n" +
+"【阿尔忒弥斯 + 德墨忒尔】水晶清晰 (Crystal Clarity)：水晶光束伤害+10%，追踪更强。\n" +
+"【阿尔忒弥斯 + 狄俄尼索斯】分裂头痛 (Splitting Headache)：每层宿醉+1.5%暴击率。\n" +
+"【阿尔忒弥斯 + 波塞冬】幻影射击 (Mirage Shot)：投射额外发射第二发(30%伤害)。\n" +
+"【阿尔忒弥斯 + 宙斯】避雷针 (Lightning Rod)：地上的血石每秒闪电打击敌人(70伤害)。需Infernal Soul。\n\n" +
+"【雅典娜 + 阿瑞斯】仁慈终结 (Merciful End)：偏转立即激活毁灭效果(40伤害)。非常强力的combo！\n" +
+"【雅典娜 + 德墨忒尔】顽固之根 (Stubborn Roots)：无死亡抗拒时缓慢恢复生命。\n" +
+"【雅典娜 + 宙斯】闪电方阵 (Lightning Phalanx)：方阵射击在敌人间弹射最多3次。\n" +
+"【雅典娜 + 狄俄尼索斯】计算风险 (Calculated Risk)：敌人远程弹幕速度减慢50%。\n" +
+"【雅典娜 + 波塞冬】不动如山 (Unshakeable Mettle)：免疫眩晕，Boss减伤+10%。\n\n" +
+"【阿瑞斯 + 德墨忒尔】冰冻漩涡 (Freezing Vortex)：刀刃裂隙施加冰冻但更小更慢。\n" +
+"【阿瑞斯 + 狄俄尼索斯】恶心诅咒 (Curse of Nausea)：宿醉伤害频率加快(0.5→0.35秒)。\n" +
+"【阿瑞斯 + 波塞冬】溺水诅咒 (Curse of Drowning)：洪水射击变为3次范围脉冲。\n" +
+"【阿瑞斯 + 宙斯】复仇情绪 (Vengeful Mood)：复仇效果自动每3秒触发。\n\n" +
+"【德墨忒尔 + 狄俄尼索斯】冰酒 (Ice Wine)：投射爆炸产生冰冻迷雾(+30%伤害)。\n" +
+"【德墨忒尔 + 宙斯】冷聚变 (Cold Fusion)：Jolted效果不消失(10秒)。\n" +
+"【德墨忒尔 + 波塞冬】暴风雪射击 (Blizzard Shot)：投射穿透敌人并发射碎片。\n\n" +
+"【狄俄尼索斯 + 宙斯】璀璨盛宴 (Scintillating Feast)：节日迷雾周期性闪电伤害(60)。\n" +
+"【狄俄尼索斯 + 波塞冬】专属通道 (Exclusive Access)：所有祝福最低史诗品质。最强辅助双人祝福之一。\n\n" +
+"【波塞冬 + 宙斯】海上风暴 (Sea Storm)：击退同时闪电打击(40伤害)。");
+
+// === 传奇祝福 ===
+addKb("传奇祝福",
+"=== 12个传奇祝福 (Legendary Boons) ===\n\n" +
+"宙斯 - 分裂闪电 (Splitting Bolt)：所有闪电额外产生爆发(40伤害)。前置：风暴闪电/双重打击/高压电中选1个。\n" +
+"波塞冬 - 第二波 (Second Wave)：击退延迟后额外推一次。前置：核心祝福+台风之怒/碎浪中选1个。\n" +
+"波塞冬 - 大丰收 (Huge Catch)：钓鱼点出现率+20%。前置：沉没宝藏/海洋恩赐中选2个。\n" +
+"雅典娜 - 神圣保护 (Divine Protection)：屏障每20秒抵消一次伤害。前置：华丽反击。\n" +
+"阿佛洛狄忒 - 不健康迷恋 (Unhealthy Fixation)：虚弱15%几率魅惑4秒。前置：核心祝福+虚弱增强祝福。\n" +
+"阿尔忒弥斯 - 全副武装 (Fully Loaded)：血石+2。前置：支援火力/穴位攻击/出口创伤中选2个。\n" +
+"阿瑞斯 - 恶性循环 (Vicious Cycle)：刀刃裂隙连续命中递增伤害。前置：黑金属或吞噬漩涡。\n" +
+"狄俄尼索斯 - 断片 (Black Out)：宿醉敌人在迷雾中受伤+60%。前置：迷幻射击+宿醉核心。\n" +
+"德墨忒尔 - 冬季丰收 (Winter Harvest)：冰冻敌人在10%生命时碎裂。前置：致命冰冻/贪婪意志/极地爆发中选2个。\n" +
+"赫尔墨斯 - 伟大召回 (Greater Recall)：血石自动返回。前置：连射/快速装填 + Infernal Soul。\n" +
+"赫尔墨斯 - 坏消息 (Bad News)：无血石敌人投射伤害+50%。前置：自动装填 + Stygian Soul。\n" +
+"混沌 - 反抗 (Defiance)：+1死亡抗拒。前置：任意混沌祝福。");
+
+// === 常见问题 ===
+addKb("常见问题",
+"=== 哈迪斯常见问题 ===\n\n" +
+"Q: 什么是祝福(Boon)？\nA: 祝福是奥林匹斯众神在每次逃脱中给予的临时能力强化。分为攻击、特殊、投射、冲刺、召唤和被动6大类。死亡后所有祝福丢失。\n\n" +
+"Q: 祝福稀有度等级是什么？\nA: 普通(白色)→稀有(蓝色)→史诗(紫色)→英雄(红色)。稀有度越高效果越强。英雄级只能通过特定方式获得(如交换祝福)。\n\n" +
+"Q: 什么是双人祝福(Duo Boon)？\nA: 双人祝福是两位神明合作给予的特殊祝福。需要先拥有每位神明至少1个合格祝福，才有几率在后续房间遇到。共28个。\n\n" +
+"Q: 什么是传奇祝福(Legendary Boon)？\nA: 传奇祝福是单一神明的最强祝福。需要满足特定前置条件才有极低几率出现。共12个。\n\n" +
+"Q: 如何提高双人祝福出现概率？\nA: 1) 夜之镜升级「神之遗产」(Gods' Legacy)天赋；2) 使用特定神明的信物(Keepsake)强制首次遭遇该神明；3) 购买「阿里阿德涅的线球」(Yarn of Ariadne)；4) 欧律狄刻的「清爽甘露」(Refreshing Nectar)。\n\n" +
+"Q: 什么是状态诅咒(Status Curse)？\nA: 每位神明有专属的负面状态效果，如宙斯的Jolted、阿瑞斯的Doom、阿佛洛狄忒的Weak等。镜之天赋「特权地位」(Privileged Status)在敌人受2种状态诅咒时增加你的伤害。\n\n" +
+"Q: 什么是血石(Bloodstone/Cast Ammo)？\nA: 投射弹药用的小型宝石。初始为1颗（Stygian Soul）或3颗掉落型（Infernal Soul），嵌入敌人后需等待掉落或敌人死亡回收。\n\n" +
+"Q: 如何解锁隐藏武器形态？\nA: 1) 购买命运清单；2) 至少投资5个泰坦之血到非扎格列欧斯形态；3) 与阿喀琉斯交谈解锁关羽形态(首个隐藏)；4) 投资5泰坦之血到目标武器；5) 与对应NPC交谈：剑→倪克斯、弓→阿尔忒弥斯、盾→混沌、拳→阿斯忒里俄斯、炮→宙斯。\n\n" +
+"Q: 雅典娜和阿瑞斯的「仁慈终结」怎么用？\nA: 这是最强combo双人祝福之一。需要雅典娜的偏转能力（神圣打击或神圣绽放）+ 阿瑞斯的毁灭效果（痛苦诅咒或疼痛诅咒）。偏转攻击命中后立即触发毁灭的爆发伤害(40点)，不需要等毁灭的延迟。\n\n" +
+"Q: 哪些双人祝福最强？\nA: 顶级双人祝福：心碎撕裂(暴击对虚弱+150%)、仁慈终结(偏转立即触发毁灭)、狩猎刀刃(追踪刃)、专属通道(全部史诗)、海上风暴(击退+闪电)、冰酒(冰冻迷雾)、闷热空气(自动充能)。");
+
+// === 游戏概述 ===
+addKb("游戏概述", "哈迪斯(Hades)是Supergiant Games开发的Roguelike动作游戏。玩家扮演冥界王子扎格列欧斯，在奥林匹斯众神的帮助下尝试逃离冥界。\n祝福(Boons)是众神给予的临时能力强化，分为攻击、特殊、投射、冲刺、召唤和被动。死亡后祝福全部丢失。\n稀有度：普通<稀有<史诗<英雄。\n双人祝福需两个神明的祝福触发，传奇祝福需满足前置条件。\n游戏包含6把冥界武器，每把4种形态（含1个隐藏形态），需要用泰坦之血升级。");
+
+// ==================== Search ====================
+function searchKnowledge(query) {
+  if (query.length < 2) return [];
+
+  // 中文 n-gram（2-4字）
+  const ngrams = new Set();
+  for (let n = 2; n <= 4; n++) {
+    for (let i = 0; i <= query.length - n; i++) {
+      const chunk = query.substring(i, i + n);
+      if (/^[一-鿿]+$/.test(chunk)) ngrams.add(chunk);
+    }
+  }
+
+  // 关键术语映射
+  const termMap = [
+    ["宙斯","zeus"],["波塞冬","poseidon"],["雅典娜","athena"],["阿瑞斯","ares"],
+    ["阿佛洛狄忒","aphrodite"],["阿尔忒弥斯","artemis"],["德墨忒尔","demeter"],
+    ["狄俄尼索斯","dionysus"],["赫尔墨斯","hermes"],["混沌","chaos"],
+    ["冥界之刃","stygian"],["永恒之枪","eternal spear"],["混沌之盾","shield"],
+    ["追心之弓","heart-seeking"],["玛尔丰双拳","twin fists"],["坚冥轨","adamant rail"],
+    ["双人","duo"],["传奇","legendary"],["武器","weapon"],["形态","aspect"],["隐藏","hidden"],
+    ["暴击","critical"],["虚弱","weak"],["冰冻","chill"],["宿醉","hangover"],
+    ["毁灭","doom"],["闪电","lightning"],["击退","knockback"],["偏转","deflect"],
+    ["祝福","boon"],["血石","bloodstone"],
+  ];
+
+  const scored = [];
+  for (const doc of KNOWLEDGE_DOCS) {
+    let score = 0;
+    const cl = doc.content.toLowerCase();
+    const tl = doc.title.toLowerCase();
+    const ql = query.toLowerCase();
+
+    // ngram 匹配
+    for (const ng of ngrams) {
+      const cc = cl.split(ng.toLowerCase()).length - 1;
+      const tc = tl.split(ng.toLowerCase()).length - 1;
+      if (cc > 0 || tc > 0) score += cc * ng.length * 3 + tc * ng.length * 8;
+    }
+
+    // 英文分词匹配
+    for (const kw of ql.split(/\s+/)) {
+      if (kw.length < 2) continue;
+      score += (cl.split(kw).length - 1) * 2 + (tl.split(kw).length - 1) * 5;
+    }
+
+    // 术语映射
+    for (const [cn, en] of termMap) {
+      if (ql.includes(cn)) {
+        score += (cl.split(en).length - 1) * 3 + (tl.split(en).length - 1) * 5;
+      }
+    }
+
+    if (score > 0) scored.push({ doc, score });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 3).map(s => ({
+    title: s.doc.title,
+    content: s.doc.content.length > 1000 ? s.doc.content.slice(0, 1000) + "\n…（内容过长已截断）" : s.doc.content,
+    score: s.score
+  }));
+}
+
+// ==================== Voice ====================
+let isListening = false;
+let recognition = null;
+
+function initSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('voiceBtn').style.display = 'none'; return null; }
+  const rec = new SR();
+  rec.lang = 'zh-CN'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.onresult = (e) => {
+    document.getElementById('chatInput').value = e.results[0][0].transcript;
+    stopListening();
+    doSearch();
+  };
+  rec.onerror = (e) => { document.getElementById('chatStatus').textContent = '语音识别失败: ' + e.error; stopListening(); };
+  rec.onend = () => { if (isListening) document.getElementById('chatStatus').textContent = '已结束，可重新点击麦克风'; stopListening(); };
+  return rec;
+}
+
+function toggleVoice() { isListening ? stopListening() : startListening(); }
+function startListening() {
+  if (!recognition) recognition = initSpeechRecognition();
+  if (!recognition) { document.getElementById('chatStatus').textContent = '浏览器不支持语音，请使用 Chrome'; return; }
+  try {
+    recognition.start(); isListening = true;
+    document.getElementById('voiceBtn').classList.add('listening');
+    document.getElementById('voiceBtn').textContent = '🔴';
+    document.getElementById('chatStatus').textContent = '正在聆听...(请说话)';
+  } catch (e) { document.getElementById('chatStatus').textContent = '语音启动失败'; }
+}
+function stopListening() {
+  isListening = false;
+  document.getElementById('voiceBtn').classList.remove('listening');
+  document.getElementById('voiceBtn').textContent = '🎤';
+  if (recognition) try { recognition.stop(); } catch (e) {}
+}
+
+// ==================== Search UI ====================
+function addResultMsg(title, content) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg assistant';
+  div.innerHTML = `<div class="chat-avatar">📚</div><div class="chat-bubble"><strong style="color:var(--accent)">${title}</strong><br><br>${content.replace(/\n/g, '<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function doSearch() {
+  const input = document.getElementById('chatInput');
+  const query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chatMessages');
+  const qDiv = document.createElement('div');
+  qDiv.className = 'chat-msg user';
+  qDiv.innerHTML = `<div class="chat-avatar">👤</div><div class="chat-bubble">${query}</div>`;
+  msgs.appendChild(qDiv);
+
+  document.getElementById('chatLoading').style.display = 'block';
+  document.getElementById('chatStatus').textContent = '搜索中...';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // 模拟搜索延迟（实际是瞬时，但给用户一点反馈感）
+  setTimeout(() => {
+    const results = searchKnowledge(query);
+    document.getElementById('chatLoading').style.display = 'none';
+
+    if (results.length === 0) {
+      addResultMsg('未找到结果', '没有找到与「' + query + '」相关的知识。\n\n💡 试试其他关键词，比如搜神明名、武器名、祝福类型（双人、传奇）等。');
+    } else {
+      document.getElementById('chatStatus').textContent = '找到 ' + results.length + ' 条结果';
+      results.forEach((r, i) => {
+        addResultMsg((i + 1) + '. ' + r.title, r.content);
+      });
+    }
+    document.getElementById('chatStatus').textContent = '';
+  }, 150);
+}
+
+// ==================== INIT ====================
+renderGodFilter();
+filterBoons();
+renderSynergies();
+renderWeapons();
+initBuildSelects();
+</script>
+</body>
+</html>
