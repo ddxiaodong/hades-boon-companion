@@ -728,6 +728,113 @@ body {
   margin-top: 40px;
 }
 
+/* Keepsake Cards */
+.keepsake-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.keepsake-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.keepsake-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.keepsake-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.ks-cat-god::before { background: var(--duo); }
+.ks-cat-combat::before { background: #e74c3c; }
+.ks-cat-utility::before { background: #2ecc71; }
+.ks-cat-companion::before { background: var(--legendary); }
+
+.ks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ks-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ks-giver {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ks-giver-icon { font-size: 16px; }
+
+.ks-ranks {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ks-rank {
+  flex: 1;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  padding: 7px 4px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.ks-rank .rank-label {
+  display: block;
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.ks-rank .rank-val {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ks-desc {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.5;
+}
+
+.ks-companion-uses {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--legendary);
+  font-weight: 600;
+}
+
+.ks-restriction {
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -909,6 +1016,7 @@ body {
       <button class="nav-btn" onclick="switchPage('synergy')">🔗 搭配关系</button>
       <button class="nav-btn" onclick="switchPage('build')">💡 流派推荐</button>
       <button class="nav-btn" onclick="switchPage('weapons')">🗡️ 武器图鉴</button>
+      <button class="nav-btn" onclick="switchPage('keepsakes')">🎁 信物图鉴</button>
       <button class="nav-btn" onclick="switchPage('ai')">🔍 知识搜索</button>
     </nav>
   </div>
@@ -985,6 +1093,20 @@ body {
     <div class="section-title"><span class="icon">🗡️</span> 武器图鉴</div>
     <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px;">冥界六大武器及其形态。隐藏形态需要完成特定解锁条件。</p>
     <div class="weapon-grid" id="weaponGrid"></div>
+  </div>
+
+  <!-- Page: Keepsakes -->
+  <div id="page-keepsakes" class="page">
+    <div class="section-title"><span class="icon">🎁</span> 信物图鉴</div>
+    <p style="color:var(--text-dim);margin-bottom:8px;font-size:14px;">哈迪斯全部 25 个信物 + 6 个传说伴侣。给予 NPC 1 瓶仙酒（Nectar）获得信物，装备信物完成 25/50 次遭遇可升至 2/3 级。</p>
+    <div class="god-filter" id="keepsakeFilter">
+      <div class="god-chip active" data-cat="all" onclick="setKeepsakeFilter('all')" style="color:var(--text)"><span class="dot" style="background:var(--text)"></span>全部</div>
+      <div class="god-chip" data-cat="god" onclick="setKeepsakeFilter('god')" style="color:var(--duo)"><span class="dot" style="background:var(--duo)"></span>⚡ 神明信物</div>
+      <div class="god-chip" data-cat="combat" onclick="setKeepsakeFilter('combat')" style="color:#e74c3c"><span class="dot" style="background:#e74c3c"></span>⚔️ 战斗信物</div>
+      <div class="god-chip" data-cat="utility" onclick="setKeepsakeFilter('utility')" style="color:#2ecc71"><span class="dot" style="background:#2ecc71"></span>🔧 功能信物</div>
+      <div class="god-chip" data-cat="companion" onclick="setKeepsakeFilter('companion')" style="color:#e67e22"><span class="dot" style="background:#e67e22"></span>⭐ 传说伴侣</div>
+    </div>
+    <div class="keepsake-grid" id="keepsakeGrid"></div>
   </div>
 
   <!-- Page: Knowledge Search -->
@@ -2194,12 +2316,175 @@ function doSearch() {
   }, 150);
 }
 
+// ==================== Keepsakes ====================
+const KEEPSAKES = [
+  // === 神明信物 (god) ===
+  { id:'ks_zeus', cat:'god', name:'雷霆信物', nameEn:'Thunder Signet', giver:'宙斯', giverEn:'Zeus', giverIcon:'⚡',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自宙斯，且有几率获得稀有或更高品质。' },
+  { id:'ks_poseidon', cat:'god', name:'海螺壳', nameEn:'Conch Shell', giver:'波塞冬', giverEn:'Poseidon', giverIcon:'🌊',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自波塞冬，且有几率获得稀有或更高品质。' },
+  { id:'ks_athena', cat:'god', name:'猫头鹰吊坠', nameEn:'Owl Pendant', giver:'雅典娜', giverEn:'Athena', giverIcon:'🛡️',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自雅典娜，且有几率获得稀有或更高品质。' },
+  { id:'ks_aphrodite', cat:'god', name:'永恒玫瑰', nameEn:'Eternal Rose', giver:'阿佛洛狄忒', giverEn:'Aphrodite', giverIcon:'💕',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自阿佛洛狄忒，且有几率获得稀有或更高品质。' },
+  { id:'ks_ares', cat:'god', name:'血之瓶', nameEn:'Blood-Filled Vial', giver:'阿瑞斯', giverEn:'Ares', giverIcon:'🗡️',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自阿瑞斯，且有几率获得稀有或更高品质。' },
+  { id:'ks_artemis', cat:'god', name:'翡翠箭头', nameEn:'Adamant Arrowhead', giver:'阿尔忒弥斯', giverEn:'Artemis', giverIcon:'🏹',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自阿尔忒弥斯，且有几率获得稀有或更高品质。' },
+  { id:'ks_dionysus', cat:'god', name:'满溢之杯', nameEn:'Overflowing Cup', giver:'狄俄尼索斯', giverEn:'Dionysus', giverIcon:'🍷',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自狄俄尼索斯，且有几率获得稀有或更高品质。' },
+  { id:'ks_demeter', cat:'god', name:'冰霜花环', nameEn:'Frostbitten Horn', giver:'德墨忒尔', giverEn:'Demeter', giverIcon:'❄️',
+    ranks:['+10% 稀有+','+15% 稀有+','+20% 稀有+'],
+    desc:'下一个祝福必定来自德墨忒尔，且有几率获得稀有或更高品质。' },
+  { id:'ks_chaos', cat:'god', name:'宇宙之卵', nameEn:'Cosmic Egg', giver:'混沌', giverEn:'Chaos', giverIcon:'🌀',
+    ranks:['+20% 稀有+\n免生命损失','+30% 稀有+\n免生命损失','+40% 稀有+\n免生命损失'],
+    desc:'混沌之门不再消耗生命进入，且混沌祝福有更高几率稀有以上。' },
+  { id:'ks_hades', cat:'god', name:'冥界之印', nameEn:'Sigil of the Dead', giver:'哈迪斯', giverEn:'Hades', giverIcon:'👑',
+    ranks:['+10% 神力槽\n获得冥王召唤','+20% 神力槽\n获得冥王召唤','+30% 神力槽\n获得冥王召唤'],
+    desc:'召唤变为哈迪斯之助（短暂隐身），且每场遭遇开始时神力槽部分充能。需先给予哈迪斯 2 瓶仙酒。' },
+
+  // === 战斗信物 (combat) ===
+  { id:'ks_cerberus', cat:'combat', name:'旧刺项圈', nameEn:'Old Spiked Collar', giver:'刻耳柏洛斯', giverEn:'Cerberus', giverIcon:'🐶',
+    ranks:['+25 最大生命','+38 最大生命','+50 最大生命'],
+    desc:'简单直接的生命上限提升，新手期最实用的信物之一。' },
+  { id:'ks_achilles', cat:'combat', name:'密尔米冬护腕', nameEn:'Myrmidon Bracer', giver:'阿喀琉斯', giverEn:'Achilles', giverIcon:'🛡️',
+    ranks:['正面减伤 -20%\n背面受伤 +10%','正面减伤 -25%\n背面受伤 +10%','正面减伤 -30%\n背面受伤 +10%'],
+    desc:'减少来自正面的伤害，但背面受击会受到额外伤害。' },
+  { id:'ks_nyx', cat:'combat', name:'黑披肩', nameEn:'Black Shawl', giver:'倪克斯', giverEn:'Nyx', giverIcon:'🌑',
+    ranks:['+10% 伤害','+15% 伤害','+20% 伤害'],
+    desc:'对未受伤的敌人以及从背后攻击时造成额外伤害。' },
+  { id:'ks_megaera', cat:'combat', name:'骷髅耳环', nameEn:'Skull Earring', giver:'墨盖拉', giverEn:'Megaera', giverIcon:'💀',
+    ranks:['≤35% HP 时\n+20% 伤害','≤35% HP 时\n+30% 伤害','≤35% HP 时\n+40% 伤害'],
+    desc:'生命值低于 35% 时大幅提升伤害，高风险高回报。' },
+  { id:'ks_orpheus', cat:'combat', name:'遥远记忆', nameEn:'Distant Memory', giver:'俄耳甫斯', giverEn:'Orpheus', giverIcon:'🎵',
+    ranks:['+10% 远程伤害','+20% 远程伤害','+30% 远程伤害'],
+    desc:'对距离 ≥500 单位的远处敌人造成额外伤害。' },
+  { id:'ks_patroclus', cat:'combat', name:'断矛尖', nameEn:'Broken Spearpoint', giver:'帕特洛克罗斯', giverEn:'Patroclus', giverIcon:'🔱',
+    ranks:['受伤后无敌\n1.0 秒 (7秒CD)','受伤后无敌\n1.25 秒 (7秒CD)','受伤后无敌\n1.5 秒 (7秒CD)'],
+    desc:'受到伤害后短暂无敌（7 秒冷却），提供宝贵的反应窗口。' },
+  { id:'ks_skelly', cat:'combat', name:'幸运牙齿', nameEn:'Lucky Tooth', giver:'斯凯利', giverEn:'Skelly', giverIcon:'💀',
+    ranks:['死亡抗拒\n复活 50 HP','死亡抗拒\n复活 75 HP','死亡抗拒\n复活 100 HP'],
+    desc:'每局额外获得一次死亡抗拒，复活时恢复对应生命值。新手必带！' },
+  { id:'ks_eurydice', cat:'combat', name:'常青橡果', nameEn:'Evergreen Acorn', giver:'欧律狄刻', giverEn:'Eurydice', giverIcon:'🌿',
+    ranks:['Boss 前 3 次\n命中无效','Boss 前 4 次\n命中无效','Boss 前 5 次\n命中无效'],
+    desc:'在冥界 Boss 战中，前几次被命中不造成伤害。打老爹神器。' },
+
+  // === 功能信物 (utility) ===
+  { id:'ks_hypnos', cat:'utility', name:'冥府钱袋', nameEn:'Chthonic Coin Purse', giver:'许普诺斯', giverEn:'Hypnos', giverIcon:'😴',
+    ranks:['初始 +100 金币','初始 +125 金币','初始 +150 金币'],
+    desc:'开始逃脱时获得额外金币，进图就换掉即可保留金币。' },
+  { id:'ks_charon', cat:'utility', name:'骨沙漏', nameEn:'Bone Hourglass', giver:'卡戎', giverEn:'Charon', giverIcon:'⛵',
+    ranks:['卡戎之井物品\n延长 +4 遭遇','卡戎之井物品\n延长 +6 遭遇','卡戎之井物品\n延长 +8 遭遇'],
+    desc:'从卡戎之井购买的物品效果持续更久，提高续航能力。' },
+  { id:'ks_dusa', cat:'utility', name:'鹰身女妖羽毛掸', nameEn:'Harpy Feather Duster', giver:'杜莎', giverEn:'Dusa', giverIcon:'🐍',
+    ranks:['打破罐子\n3% 概率出回复','打破罐子\n5% 概率出回复','打破罐子\n6% 概率出回复'],
+    desc:'打破场景中的罐子有几率掉落回复道具。' },
+  { id:'ks_persephone', cat:'utility', name:'力量石榴花', nameEn:'Pom Blossom', giver:'珀耳塞福涅', giverEn:'Persephone', giverIcon:'🌸',
+    ranks:['每 6 遭遇\n随机祝福 +1 级','每 5 遭遇\n随机祝福 +1 级','每 4 遭遇\n随机祝福 +1 级'],
+    desc:'每经过一定次数的遭遇，随机一个祝福提升 1 级。适合长线运营。' },
+  { id:'ks_sisyphus', cat:'utility', name:'破碎镣铐', nameEn:'Shattered Shackle', giver:'西西弗斯', giverEn:'Sisyphus', giverIcon:'🪨',
+    ranks:['无祝福时攻/特/投伤害 +50%','无祝福时攻/特/投伤害 +75%','无祝福时攻/特/投伤害 +100%'],
+    desc:'当攻击、特殊、投射栏位无祝福时，对应伤害大幅提升。适合初期过渡。' },
+  { id:'ks_thanatos', cat:'utility', name:'穿透蝴蝶', nameEn:'Pierced Butterfly', giver:'塔纳托斯', giverEn:'Thanatos', giverIcon:'🦋',
+    ranks:['无伤清图 +1.0% 伤害\n(全局叠加)','无伤清图 +1.5% 伤害\n(全局叠加)','无伤清图 +2.0% 伤害\n(全局叠加)'],
+    desc:'每无伤通过一次遭遇，全局伤害永久叠加。高操作上限神器。' },
+  { id:'ks_hermes', cat:'utility', name:'摇曳羽毛', nameEn:'Lambent Plume', giver:'赫尔墨斯', giverEn:'Hermes', giverIcon:'👟',
+    ranks:['快速清图\n+1.0% 闪避与移速','快速清图\n+1.1% 闪避与移速','快速清图\n+1.2% 闪避与移速'],
+    desc:'快速清完遭遇（约 30 秒内）可叠加闪避几率和移动速度。' },
+];
+
+const COMPANIONS = [
+  { id:'comp_battie', name:'巴蒂', nameEn:'Battie', giver:'墨盖拉', giverEn:'Megaera', giverIcon:'💀',
+    desc:'在目标区域造成 2500 伤害，随后沿直线造成额外伤害。',
+    uses:'每局 1 次（升满 5 次）', restriction:'⚠ 对复仇女神无效' },
+  { id:'comp_mort', name:'莫特', nameEn:'Mort', giver:'塔纳托斯', giverEn:'Thanatos', giverIcon:'🦋',
+    desc:'短暂延迟后在目标区域造成 3500 范围伤害。',
+    uses:'每局 1 次（升满 5 次）', restriction:'⚠ 对塔纳托斯无效' },
+  { id:'comp_rib', name:'肋骨', nameEn:'Rib', giver:'斯凯利', giverEn:'Skelly', giverIcon:'💀',
+    desc:'召唤一个 250 HP 的诱饵骷髅吸引敌人火力。',
+    uses:'每局 1 次（升满 5 次）', restriction:'' },
+  { id:'comp_shady', name:'可疑仔', nameEn:'Shady', giver:'西西弗斯', giverEn:'Sisyphus', giverIcon:'🪨',
+    desc:'造成 1000 伤害并掉落生命、黑暗和金币。',
+    uses:'每局 1 次（升满 5 次）', restriction:'' },
+  { id:'comp_fidi', name:'菲迪', nameEn:'Fidi', giver:'杜莎', giverEn:'Dusa', giverIcon:'🐍',
+    desc:'召唤杜莎持续 30 秒，发射石化弹幕（每发 70 伤害）。',
+    uses:'每局 1 次（升满 5 次）', restriction:'' },
+  { id:'comp_antos', name:'安托斯', nameEn:'Antos', giver:'阿喀琉斯', giverEn:'Achilles', giverIcon:'🛡️',
+    desc:'对 2 个敌人依次造成 1500 伤害。',
+    uses:'每局 1 次（升满 5 次）', restriction:'' },
+];
+
+let currentKsFilter = 'all';
+
+function setKeepsakeFilter(cat) {
+  currentKsFilter = cat;
+  document.querySelectorAll('#keepsakeFilter .god-chip').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+  renderKeepsakes();
+}
+
+function renderKeepsakes() {
+  const grid = document.getElementById('keepsakeGrid');
+  let items = [];
+
+  if (currentKsFilter === 'companion') {
+    items = COMPANIONS.map(c => ({ ...c, type:'companion' }));
+  } else if (currentKsFilter === 'all') {
+    items = [...KEEPSAKES.map(k => ({ ...k, type:'keepsake' })), ...COMPANIONS.map(c => ({ ...c, type:'companion' }))];
+  } else {
+    items = KEEPSAKES.filter(k => k.cat === currentKsFilter).map(k => ({ ...k, type:'keepsake' }));
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>该分类暂无疑物</p></div>';
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    if (item.type === 'companion') {
+      return `<div class="keepsake-card ks-cat-companion">
+        <div class="ks-header">
+          <span class="ks-name" style="color:var(--legendary)">⭐ ${item.name}</span>
+          <span class="boon-type type-legendary">传说伴侣</span>
+        </div>
+        <div class="ks-giver">${item.giverIcon} ${item.giver} · ${item.nameEn}</div>
+        <div class="ks-desc">${item.desc}</div>
+        <div class="ks-companion-uses">🎯 ${item.uses}</div>
+        ${item.restriction ? `<div class="ks-restriction">${item.restriction}</div>` : ''}
+      </div>`;
+    }
+
+    const catClass = 'ks-cat-' + item.cat;
+    const catLabel = { god:'神明信物', combat:'战斗信物', utility:'功能信物' }[item.cat] || '';
+    return `<div class="keepsake-card ${catClass}">
+      <div class="ks-header">
+        <span class="ks-name">${item.name}</span>
+        <span class="boon-type" style="background:rgba(241,196,15,0.2);color:#f1c40f">${catLabel}</span>
+      </div>
+      <div class="ks-giver">${item.giverIcon} 给予者：${item.giver} · <span style="color:var(--text-dim)">${item.nameEn}</span></div>
+      <div class="ks-ranks">
+        <div class="ks-rank"><span class="rank-label">⭐ 1 级</span><span class="rank-val">${item.ranks[0]}</span></div>
+        <div class="ks-rank"><span class="rank-label">⭐ 2 级</span><span class="rank-val">${item.ranks[1]}</span></div>
+        <div class="ks-rank"><span class="rank-label">⭐ 3 级</span><span class="rank-val">${item.ranks[2]}</span></div>
+      </div>
+      <div class="ks-desc">${item.desc}</div>
+    </div>`;
+  }).join('');
+}
+
 // ==================== INIT ====================
 renderGodFilter();
 filterBoons();
 renderSynergies();
 renderWeapons();
 initBuildSelects();
+renderKeepsakes();
 </script>
 </body>
 </html>
